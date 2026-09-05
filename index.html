@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MPLADS · AI Risk Intelligence Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        /* ===== ROOT VARIABLES ===== */
+        :root {
+            --bg: #f5f0eb;
+            --bg-card: #ffffff;
+            --text: #1e1a16;
+            --text-secondary: #7a6a5a;
+            --border: #e0d6cc;
+            --primary: #7a1f1f;
+            --primary-hover: #8a2a2a;
+            --shadow: rgba(90, 50, 30, 0.08);
+            --input-bg: #f5f0eb;
+            --table-hover: #f5f0eb;
+        }
+        [data-theme="dark"] {
+            --bg: #1a1410;
+            --bg-card: #2a221c;
+            --text: #f0e8de;
+            --text-secondary: #a68b78;
+            --border: #3d322a;
+            --primary: #9a3a3a;
+            --primary-hover: #aa4a4a;
+            --shadow: rgba(0,0,0,0.3);
+            --input-bg: #3d322a;
+            --table-hover: #3d322a;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+        /* ===== TOP HEADER ===== */
+        .top-header {
+            background: var(--bg-card);
+            border-bottom: 2px solid var(--border);
+            padding: 12px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            transition: background 0.3s;
+        }
+        .top-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .top-header .brand .logo {
+            background: var(--primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.2rem;
+        }
+        .top-header .brand h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .top-header .brand h1 small {
+            font-weight: 400;
+            font-size: 0.6rem;
+            display: block;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .top-header .controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .top-header .controls select {
+            padding: 6px 14px;
+            border-radius: 40px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            outline: none;
+        }
+        .top-header .controls select:focus { border-color: var(--primary); }
+        .top-header .controls button {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            width: 38px;
+            height: 38px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.15s;
+            position: relative;
+        }
+        .top-header .controls button:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .top-header .controls .notif-count {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--primary);
+            color: #fff;
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 40px;
+            border: 2px solid var(--bg-card);
+        }
+        .top-header .controls .notif-dot {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 8px;
+            height: 8px;
+            background: #b91c1c;
+            border-radius: 40px;
+            border: 2px solid var(--bg-card);
+        }
+        .top-header .controls .theme-btn i { transition: 0.3s; }
+        .top-header .controls .theme-btn:hover i { transform: rotate(20deg); }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main-layout {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 220px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 20px 16px;
+            flex-shrink: 0;
+            transition: background 0.3s;
+            overflow-y: auto;
+        }
+        .sidebar .nav-label {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 10px 0 4px 8px;
+        }
+        .sidebar .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.15s;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 1px;
+        }
+        .sidebar .nav-item i {
+            width: 18px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+        .sidebar .nav-item:hover { background: var(--input-bg); }
+        .sidebar .nav-item:hover i { color: var(--primary); }
+        .sidebar .nav-item.active {
+            background: var(--primary);
+            color: #fff;
+        }
+        .sidebar .nav-item.active i { color: #fff; }
+        .sidebar .nav-item .badge {
+            margin-left: auto;
+            background: var(--border);
+            color: var(--text-secondary);
+            font-size: 0.55rem;
+            padding: 1px 10px;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+        .sidebar .nav-item.active .badge {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        .sidebar .nav-item .badge.alert {
+            background: var(--primary);
+            color: #fff;
+        }
+        .sidebar .user-section {
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+            margin-top: 16px;
+        }
+        .sidebar .user-section .user-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: var(--input-bg);
+            cursor: pointer;
+            transition: 0.15s;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+        .sidebar .user-section .user-card:hover { background: var(--border); }
+        .sidebar .user-section .user-card i {
+            font-size: 1.6rem;
+            color: var(--text-secondary);
+        }
+        .sidebar .user-section .user-card .name {
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--text);
+        }
+        .sidebar .user-section .user-card .role {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+        }
+        .sidebar .sign-out-btn {
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: transparent;
+            width: 100%;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            transition: 0.15s;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: 'Inter', sans-serif;
+        }
+        .sidebar .sign-out-btn:hover {
+            background: #f0e4e0;
+            border-color: var(--primary);
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            flex: 1;
+            padding: 24px 32px 32px;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* ===== PAGE SECTIONS ===== */
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== KPI GRID ===== */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 16px 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 12px var(--shadow);
+            transition: 0.15s;
+            cursor: pointer;
+        }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--shadow); }
+        .kpi-card .label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .kpi-card .value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 2px;
+        }
+        .kpi-card .sub {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        .kpi-card .trend {
+            font-size: 0.55rem;
+            padding: 2px 10px;
+            border-radius: 40px;
+            display: inline-block;
+            font-weight: 600;
+        }
+        .kpi-card .trend.up { background: #e8f0e0; color: #2d6a2d; }
+        .kpi-card .trend.down { background: #f0e4e0; color: #7a2a2a; }
+        .kpi-card.high .value { color: var(--primary); }
+        .kpi-card.delay .value { color: #b45309; }
+        .kpi-card.anomaly .value { color: #7c3aed; }
+        .kpi-card .icon-bg {
+            float: right;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: var(--primary);
+            background: var(--input-bg);
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 18px 22px 22px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 12px var(--shadow);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .card-header h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .card-header h3 i { color: var(--primary); margin-right: 6px; }
+        .card-header .action-link {
+            font-size: 0.7rem;
+            color: var(--primary);
+            font-weight: 500;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 40px;
+            transition: 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+        .card-header .action-link:hover { background: var(--input-bg); }
+
+        /* ===== MAP ===== */
+        .map-container {
+            background: var(--input-bg);
+            border-radius: 14px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            position: relative;
+            margin-bottom: 14px;
+        }
+        .map-container svg { width: 100%; height: auto; }
+        .map-container .district { cursor: pointer; transition: 0.15s; }
+        .map-container .district:hover { opacity: 1 !important; stroke: var(--text); stroke-width: 2; }
+        .map-tooltip {
+            display: none;
+            position: absolute;
+            background: var(--bg-card);
+            color: var(--text);
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 0.75rem;
+            font-weight: 500;
+            box-shadow: 0 4px 16px var(--shadow);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* ===== TABLE ===== */
+        .table-wrap { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        table th {
+            text-align: left;
+            padding: 6px 0 4px 0;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 2px solid var(--border);
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        table td {
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        table tr:last-child td { border-bottom: none; }
+        table tr.clickable { cursor: pointer; transition: 0.1s; }
+        table tr.clickable:hover { background: var(--table-hover); }
+
+        .risk-badge {
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .risk-badge.high { background: var(--primary); color: #fff; }
+        .risk-badge.medium { background: #b45309; color: #fff; }
+        .risk-badge.low { background: #2d6a2d; color: #fff; }
+
+        .status-badge {
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .status-badge.completed { background: #e8f0e0; color: #2d6a2d; }
+        .status-badge.ongoing { background: #e0e8f4; color: #1a4a7a; }
+        .status-badge.delayed { background: #f0e4d0; color: #b45309; }
+        .status-badge.stalled { background: #f0e4e0; color: var(--primary); }
+
+        .text-muted { color: var(--text-secondary); font-size: 0.7rem; }
+
+        /* ===== INVESTIGATION PANEL ===== */
+        .invest-panel {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 18px 20px 22px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 12px var(--shadow);
+        }
+        .invest-panel .project-id {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .invest-panel .project-id small {
+            font-weight: 400;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+        .invest-panel .risk-circle {
+            background: var(--input-bg);
+            padding: 2px 16px 2px 12px;
+            border-radius: 60px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--border);
+        }
+        .invest-panel .risk-circle .score {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .invest-panel .risk-circle .label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        .invest-panel .signals {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 12px;
+            background: var(--input-bg);
+            padding: 8px 12px;
+            border-radius: 12px;
+            margin: 8px 0 10px 0;
+            border: 1px solid var(--border);
+        }
+        .invest-panel .signals .signal-item {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            font-size: 0.75rem;
+        }
+        .invest-panel .signals .signal-item .name { color: var(--text); font-weight: 500; }
+        .invest-panel .signals .signal-item .val {
+            font-weight: 700;
+            background: var(--bg-card);
+            padding: 0 8px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            border: 1px solid var(--border);
+        }
+        .invest-panel .flag-box {
+            background: var(--input-bg);
+            border-radius: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            margin: 6px 0;
+        }
+        .invest-panel .flag-box .highlight { font-weight: 700; color: var(--primary); }
+        .invest-panel .flag-box .stat {
+            background: var(--bg-card);
+            padding: 3px 12px 3px 8px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            border: 1px solid var(--border);
+            display: inline-block;
+            margin-right: 6px;
+            margin-bottom: 4px;
+        }
+        .invest-panel .flag-box .similarity {
+            background: var(--bg-card);
+            padding: 3px 14px;
+            border-radius: 40px;
+            display: inline-block;
+            font-weight: 500;
+            font-size: 0.75rem;
+            border: 1px solid var(--border);
+        }
+        .invest-panel .flag-box .similarity i { color: var(--primary); }
+        .invest-panel .action-btn {
+            margin-top: 10px;
+            background: var(--primary);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+        .invest-panel .action-btn:hover { background: var(--primary-hover); }
+
+        /* ===== 2-COL LAYOUT ===== */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* ===== BOTTOM SECTION ===== */
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 4px;
+        }
+        .detail-card {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 16px 20px 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 12px var(--shadow);
+        }
+        .detail-card h4 {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+        .detail-card h4 i { color: var(--primary); margin-right: 6px; }
+        .flag-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.78rem;
+        }
+        .flag-detail:last-child { border-bottom: none; }
+        .flag-detail .val.red { color: var(--primary); }
+        .flag-detail .val.orange { color: #b45309; }
+        .flag-detail .val.purple { color: #7c3aed; }
+        .action-chip {
+            background: var(--input-bg);
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+        .action-chip:hover { background: var(--border); }
+        .action-chip i { margin-right: 4px; color: var(--primary); }
+
+        /* ===== FILTERS ===== */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .filter-bar input, .filter-bar select {
+            padding: 6px 12px;
+            border-radius: 40px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 0.75rem;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            flex: 1;
+            min-width: 100px;
+        }
+        .filter-bar input:focus, .filter-bar select:focus { border-color: var(--primary); }
+        .filter-bar .apply-btn {
+            background: var(--primary);
+            color: #fff;
+            padding: 6px 18px;
+            border-radius: 40px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.75rem;
+            font-family: 'Inter', sans-serif;
+            transition: 0.15s;
+        }
+        .filter-bar .apply-btn:hover { background: var(--primary-hover); }
+
+        /* ===== ALERTS ===== */
+        .alert-item {
+            padding: 10px 14px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            border-left: 4px solid;
+        }
+        .alert-item.critical { background: #f0e4e0; border-color: var(--primary); }
+        .alert-item.high { background: #f0e4d0; border-color: #b45309; }
+        .alert-item.moderate { background: #ede9fe; border-color: #7c3aed; }
+        .alert-item.resolved { background: #e8f0e0; border-color: #2d6a2d; }
+        .alert-item .alert-time { font-size: 0.65rem; color: var(--text-secondary); }
+        .alert-item .alert-text { margin-top: 2px; font-size: 0.8rem; color: var(--text); }
+        .alert-item .alert-actions { margin-top: 4px; display: flex; gap: 8px; }
+        .alert-item .alert-actions button {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+        }
+        .alert-item .alert-actions button:hover { text-decoration: underline; }
+
+        /* ===== REPORTS ===== */
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .report-card {
+            background: var(--input-bg);
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: 0.15s;
+        }
+        .report-card:hover { border-color: var(--primary); }
+        .report-card i { font-size: 1.6rem; color: var(--primary); }
+        .report-card .report-name { font-weight: 600; margin-top: 4px; font-size: 0.8rem; color: var(--text); }
+        .report-card .report-desc { font-size: 0.65rem; color: var(--text-secondary); }
+        .report-card .download-btn {
+            margin-top: 6px;
+            padding: 3px 16px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            background: var(--primary);
+            color: #fff;
+            transition: 0.15s;
+        }
+        .report-card .download-btn:hover { background: var(--primary-hover); }
+
+        /* ===== SETTINGS ===== */
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .settings-row span { font-size: 0.8rem; }
+        .settings-row .toggle {
+            width: 40px;
+            height: 22px;
+            background: var(--border);
+            border-radius: 40px;
+            cursor: pointer;
+            position: relative;
+            border: none;
+            transition: 0.15s;
+        }
+        .settings-row .toggle.active { background: var(--primary); }
+        .settings-row .toggle .slider {
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 40px;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            transition: 0.15s;
+        }
+        .settings-row .toggle.active .slider { left: 21px; }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 28px 32px;
+            max-width: 440px;
+            width: 90%;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from { transform: scale(0.95) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .modal h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 6px; }
+        .modal p { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 14px; white-space: pre-line; }
+        .modal .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .modal .modal-actions button {
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: none;
+            cursor: pointer;
+            transition: 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal .modal-actions .btn-secondary { background: var(--input-bg); color: var(--text); }
+        .modal .modal-actions .btn-secondary:hover { background: var(--border); }
+        .modal .modal-actions .btn-primary { background: var(--primary); color: #fff; }
+        .modal .modal-actions .btn-primary:hover { background: var(--primary-hover); }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .toast {
+            background: var(--bg-card);
+            color: var(--text);
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            box-shadow: 0 6px 24px var(--shadow);
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+        }
+        .toast.success { border-left-color: #2d6a2d; }
+        .toast.warning { border-left-color: #b45309; }
+        .toast i { font-size: 1rem; }
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            margin-top: 28px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border);
+            padding-top: 14px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .footer .status {
+            background: var(--input-bg);
+            padding: 2px 12px;
+            border-radius: 40px;
+        }
+        .footer .status i { color: #2d6a2d; font-size: 0.4rem; margin-right: 4px; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 992px) {
+            .sidebar { width: 60px; padding: 12px 6px; }
+            .sidebar .nav-item span { display: none; }
+            .sidebar .nav-item .badge { display: none; }
+            .sidebar .nav-label { display: none; }
+            .sidebar .user-card .name, .sidebar .user-card .role { display: none; }
+            .sidebar .user-card { justify-content: center; padding: 6px; }
+            .sidebar .sign-out-btn span { display: none; }
+            .content { padding: 16px; }
+            .two-col { grid-template-columns: 1fr; }
+            .bottom-grid { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: 1fr 1fr; }
+            .report-grid { grid-template-columns: 1fr; }
+            .top-header { padding: 8px 16px; flex-wrap: wrap; gap: 8px; }
+            .top-header .brand h1 { font-size: 0.9rem; }
+            .top-header .controls select { font-size: 0.7rem; padding: 4px 10px; }
+        }
+        @media (max-width: 600px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+            .filter-bar input, .filter-bar select { min-width: 70px; font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== TOP HEADER ===== -->
+<header class="top-header">
+    <div class="brand">
+        <div class="logo"><i class="fas fa-robot"></i></div>
+        <h1>MPLADS <small>AI Risk Intelligence</small></h1>
+    </div>
+    <div class="controls">
+        <select id="roleSelector">
+            <option value="citizen">👤 Citizen</option>
+            <option value="mp" selected>🏛️ MP</option>
+            <option value="district">🏢 District Authority</option>
+            <option value="ministry">🇮🇳 Ministry</option>
+        </select>
+        <input type="date" id="datePicker" style="padding:4px 10px;border-radius:40px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:0.75rem;font-family:'Inter',sans-serif;outline:none;" />
+        <button class="notif-btn" id="notifBtn" title="Alerts">
+            <i class="far fa-bell"></i>
+            <span class="notif-dot" id="notifDot"></span>
+            <span class="notif-count" id="notifCount">12</span>
+        </button>
+        <button class="theme-btn" id="themeBtn" title="Toggle Theme">
+            <i class="fas fa-moon"></i>
+        </button>
+        <button id="refreshBtn" style="background:var(--primary);color:#fff;border:none;" title="Refresh Data">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+    </div>
+</header>
+
+<!-- ===== MAIN LAYOUT ===== -->
+<div class="main-layout">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <nav>
+            <div class="nav-label">Main</div>
+            <button class="nav-item active" data-page="dashboard"><i class="fas fa-chart-pie"></i> <span>Dashboard</span> <span class="badge">Live</span></button>
+            <button class="nav-item" data-page="map"><i class="fas fa-map-marked-alt"></i> <span>Risk Map</span></button>
+            <button class="nav-item" data-page="projects"><i class="fas fa-list-check"></i> <span>Projects</span> <span class="badge">12k</span></button>
+            <button class="nav-item" data-page="alerts"><i class="fas fa-exclamation-triangle"></i> <span>Alerts</span> <span class="badge alert" id="alertBadge">12</span></button>
+
+            <div class="nav-label" style="margin-top:10px;">Analysis</div>
+            <button class="nav-item" data-page="cost"><i class="fas fa-coins"></i> <span>Cost Anomalies</span> <span class="badge">193</span></button>
+            <button class="nav-item" data-page="delayed"><i class="fas fa-clock"></i> <span>Delayed</span> <span class="badge">812</span></button>
+            <button class="nav-item" data-page="duplicates"><i class="fas fa-copy"></i> <span>Duplicates</span> <span class="badge">47</span></button>
+
+            <div class="nav-label" style="margin-top:10px;">Reports</div>
+            <button class="nav-item" data-page="reports"><i class="fas fa-file-pdf"></i> <span>Export</span></button>
+            <button class="nav-item" data-page="settings"><i class="fas fa-sliders-h"></i> <span>Settings</span></button>
+        </nav>
+
+        <div class="user-section">
+            <button class="user-card" id="userProfileBtn">
+                <i class="fas fa-user-circle"></i>
+                <div>
+                    <div class="name">Admin User</div>
+                    <div class="role">MoSPI · DIIID</div>
+                </div>
+            </button>
+            <button class="sign-out-btn" id="signOutBtn">
+                <i class="fas fa-sign-out-alt"></i> <span>Sign Out</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ===== CONTENT ===== -->
+    <div class="content">
+
+        <!-- ===== PAGE: DASHBOARD ===== -->
+        <div class="page active" id="page-dashboard">
+
+            <!-- KPI Grid -->
+            <div class="kpi-grid">
+                <div class="kpi-card"><div class="icon-bg"><i class="fas fa-tasks"></i></div><div class="label">Total Projects</div><div class="value" id="kpiTotal">12,482</div><div class="sub"><span class="trend up"><i class="fas fa-arrow-up"></i> +8%</span> vs last quarter</div></div>
+                <div class="kpi-card high"><div class="icon-bg" style="background:#f0e4e0;color:var(--primary);"><i class="fas fa-exclamation-triangle"></i></div><div class="label">High Risk</div><div class="value" id="kpiHighRisk">347</div><div class="sub"><span class="trend down"><i class="fas fa-arrow-up"></i> +12</span> this week</div></div>
+                <div class="kpi-card delay"><div class="icon-bg" style="background:#f0e4d0;color:#b45309;"><i class="fas fa-clock"></i></div><div class="label">Delayed</div><div class="value" id="kpiDelayed">812</div><div class="sub"><span class="trend down">⏳ 23% of total</span></div></div>
+                <div class="kpi-card anomaly"><div class="icon-bg" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-coins"></i></div><div class="label">Cost Anomalies</div><div class="value" id="kpiAnomaly">193</div><div class="sub"><span class="trend down"><i class="fas fa-arrow-up"></i> +4</span> flagged</div></div>
+            </div>
+
+            <!-- 2-COL -->
+            <div class="two-col">
+                <!-- LEFT -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-map-marked-alt"></i> Risk Map · India</h3>
+                        <button class="action-link" id="fullscreenMapBtn"><i class="fas fa-expand"></i> Full</button>
+                    </div>
+                    <div class="map-container" id="mapContainer">
+                        <svg viewBox="0 0 600 500" style="width:100%;">
+                            <path d="M120,40 L180,20 L240,30 L290,50 L330,40 L370,60 L390,90 L360,120 L380,160 L340,190 L360,230 L330,270 L290,290 L250,270 L210,310 L170,280 L140,240 L120,200 L100,160 L110,120 L120,40Z" fill="#e0d6cc" stroke="#a68b78" stroke-width="2"/>
+                            <rect x="140" y="80" width="35" height="25" rx="4" fill="#7a1f1f" opacity="0.85" class="district" data-district="Pune" data-risk="high"/><text x="148" y="97" fill="white" font-size="6" font-weight="600">Pune</text>
+                            <rect x="200" y="100" width="30" height="22" rx="4" fill="#7a1f1f" opacity="0.85" class="district" data-district="Mumbai" data-risk="high"/><text x="207" y="115" fill="white" font-size="6" font-weight="600">Mumbai</text>
+                            <rect x="110" y="130" width="30" height="22" rx="4" fill="#b45309" opacity="0.85" class="district" data-district="Nashik" data-risk="medium"/><text x="117" y="145" fill="white" font-size="6" font-weight="600">Nashik</text>
+                            <rect x="250" y="140" width="32" height="24" rx="4" fill="#7a1f1f" opacity="0.85" class="district" data-district="Nagpur" data-risk="high"/><text x="257" y="157" fill="white" font-size="6" font-weight="600">Nagpur</text>
+                            <rect x="190" y="180" width="30" height="24" rx="4" fill="#b45309" opacity="0.85" class="district" data-district="Thane" data-risk="medium"/><text x="197" y="197" fill="white" font-size="6" font-weight="600">Thane</text>
+                            <rect x="280" y="210" width="35" height="24" rx="4" fill="#2d6a2d" opacity="0.85" class="district" data-district="Ahmedabad" data-risk="low"/><text x="287" y="227" fill="white" font-size="6" font-weight="600">Ahmedabad</text>
+                            <rect x="340" y="250" width="35" height="24" rx="4" fill="#2d6a2d" opacity="0.85" class="district" data-district="Hyderabad" data-risk="low"/><text x="347" y="267" fill="white" font-size="6" font-weight="600">Hyderabad</text>
+                            <rect x="390" y="280" width="30" height="22" rx="4" fill="#b45309" opacity="0.85" class="district" data-district="Bengaluru" data-risk="medium"/><text x="397" y="295" fill="white" font-size="6" font-weight="600">Bengaluru</text>
+                            <rect x="230" y="280" width="35" height="24" rx="4" fill="#2d6a2d" opacity="0.85" class="district" data-district="Chennai" data-risk="low"/><text x="237" y="297" fill="white" font-size="6" font-weight="600">Chennai</text>
+                            <rect x="80" y="240" width="30" height="24" rx="4" fill="#7a1f1f" opacity="0.85" class="district" data-district="Delhi" data-risk="high"/><text x="87" y="257" fill="white" font-size="6" font-weight="600">Delhi</text>
+                            <rect x="60" y="290" width="35" height="24" rx="4" fill="#b45309" opacity="0.85" class="district" data-district="Jaipur" data-risk="medium"/><text x="67" y="307" fill="white" font-size="6" font-weight="600">Jaipur</text>
+                            <rect x="120" y="330" width="32" height="24" rx="4" fill="#2d6a2d" opacity="0.85" class="district" data-district="Lucknow" data-risk="low"/><text x="127" y="347" fill="white" font-size="6" font-weight="600">Lucknow</text>
+                            <rect x="400" y="330" width="30" height="24" rx="4" fill="#7a1f1f" opacity="0.85" class="district" data-district="Kolkata" data-risk="high"/><text x="407" y="347" fill="white" font-size="6" font-weight="600">Kolkata</text>
+                            <rect x="450" y="370" width="35" height="24" rx="4" fill="#b45309" opacity="0.85" class="district" data-district="Patna" data-risk="medium"/><text x="457" y="387" fill="white" font-size="6" font-weight="600">Patna</text>
+                            <rect x="490" y="400" width="30" height="22" rx="4" fill="#2d6a2d" opacity="0.85" class="district" data-district="Guwahati" data-risk="low"/><text x="497" y="415" fill="white" font-size="6" font-weight="600">Guwahati</text>
+                            <rect x="30" y="450" width="14" height="14" rx="3" fill="#7a1f1f"/><text x="50" y="461" fill="var(--text)" font-size="8">High Risk (347)</text>
+                            <rect x="30" y="468" width="14" height="14" rx="3" fill="#b45309"/><text x="50" y="479" fill="var(--text)" font-size="8">Medium Risk (1,283)</text>
+                            <rect x="30" y="486" width="14" height="14" rx="3" fill="#2d6a2d"/><text x="50" y="497" fill="var(--text)" font-size="8">Low Risk (5,102)</text>
+                        </svg>
+                        <div class="map-tooltip" id="mapTooltip"></div>
+                    </div>
+
+                    <div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                            <span style="font-weight:600;font-size:0.85rem;color:var(--text);"><i class="fas fa-list" style="color:var(--primary);margin-right:4px;"></i>High Risk Projects</span>
+                            <span class="text-muted">click row → investigate</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="projectTable">
+                                <thead><tr><th>Project</th><th>District</th><th>Type</th><th>Risk</th></tr></thead>
+                                <tbody>
+                                    <tr class="clickable" data-id="23871"><td><strong>#23871</strong></td><td>Pune</td><td>Road</td><td><span class="risk-badge high">87</span></td></tr>
+                                    <tr class="clickable" data-id="19281"><td><strong>#19281</strong></td><td>Nashik</td><td>School</td><td><span class="risk-badge high">81</span></td></tr>
+                                    <tr class="clickable" data-id="18291"><td><strong>#18291</strong></td><td>Mumbai</td><td>Water</td><td><span class="risk-badge high">78</span></td></tr>
+                                    <tr class="clickable" data-id="17452"><td><strong>#17452</strong></td><td>Nagpur</td><td>Healthcare</td><td><span class="risk-badge high">74</span></td></tr>
+                                    <tr class="clickable" data-id="16523"><td><strong>#16523</strong></td><td>Thane</td><td>Road</td><td><span class="risk-badge high">72</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top:8px;display:flex;justify-content:space-between;">
+                            <span class="text-muted">Showing 5 of 347 high-risk projects</span>
+                            <button class="action-link" id="viewAllProjects"><i class="fas fa-arrow-right"></i> View all</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Investigation -->
+                <div>
+                    <div class="invest-panel" id="investPanel">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;">
+                            <span class="project-id">#23871 <small>Pune · MPLADS</small></span>
+                            <span class="risk-circle"><span class="score" id="riskScore">87</span> <span class="label">/100</span></span>
+                        </div>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:0.7rem;margin:4px 0 8px;">
+                            <span style="background:var(--input-bg);padding:2px 12px;border-radius:40px;border:1px solid var(--border);"><i class="far fa-calendar-alt"></i> Started: Jan 2025</span>
+                            <span style="background:var(--input-bg);padding:2px 12px;border-radius:40px;border:1px solid var(--border);"><i class="fas fa-user"></i> SK Infra</span>
+                            <span style="background:var(--input-bg);padding:2px 12px;border-radius:40px;border:1px solid var(--border);"><i class="fas fa-coins"></i> ₹4.2Cr</span>
+                            <span style="background:var(--input-bg);padding:2px 12px;border-radius:40px;border:1px solid var(--border);"><i class="fas fa-road"></i> Road</span>
+                        </div>
+
+                        <div class="signals" id="signalsContainer">
+                            <span class="signal-item"><span class="name">Cost anomaly</span> <span class="val">+24</span></span>
+                            <span class="signal-item"><span class="name">Progress mismatch</span> <span class="val">+21</span></span>
+                            <span class="signal-item"><span class="name">Delay probability</span> <span class="val">+18</span></span>
+                            <span class="signal-item"><span class="name">Duplicate similarity</span> <span class="val">+14</span></span>
+                            <span class="signal-item"><span class="name">Payment anomaly</span> <span class="val">+10</span></span>
+                        </div>
+
+                        <div class="flag-box">
+                            <div style="font-weight:600;margin-bottom:4px;font-size:0.8rem;color:var(--text);"><i class="fas fa-flag" style="color:var(--primary);"></i> WHY WAS THIS FLAGGED?</div>
+                            <div>
+                                <span class="stat"><i class="fas fa-coins"></i> Cost: <span class="highlight" id="costDetail">32% above</span> comparable</span>
+                                <span class="stat"><i class="fas fa-chart-line"></i> Funds: <span id="fundsDetail">76%</span> used · Physical: <span id="physicalDetail">39%</span></span>
+                            </div>
+                            <div class="similarity" id="similarityDetail"><i class="fas fa-copy"></i> 91% similarity with #17834 within 1.4 km</div>
+                        </div>
+
+                        <button class="action-btn" id="actionBtn"><i class="fas fa-clipboard-check"></i> <span id="actionText">Priority field verification</span></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTTOM -->
+            <div class="bottom-grid">
+                <div class="detail-card">
+                    <h4><i class="fas fa-search"></i> Detailed Flag Breakdown</h4>
+                    <div id="detailFlags">
+                        <div class="flag-detail"><span>Cost anomaly</span> <span class="val red">+24 · 32% above avg</span></div>
+                        <div class="flag-detail"><span>Progress mismatch</span> <span class="val orange">+21 · 76% funds vs 39% physical</span></div>
+                        <div class="flag-detail"><span>Delay probability</span> <span class="val orange">+18 · schedule slippage</span></div>
+                        <div class="flag-detail"><span>Duplicate similarity</span> <span class="val purple">+14 · 91% similar (1.4km)</span></div>
+                        <div class="flag-detail"><span>Payment anomaly</span> <span class="val red">+10 · irregular transactions</span></div>
+                    </div>
+                </div>
+                <div class="detail-card">
+                    <h4><i class="fas fa-bullseye"></i> Recommended Actions</h4>
+                    <div style="background:var(--input-bg);padding:10px 14px;border-radius:12px;margin-bottom:8px;border:1px solid var(--border);">
+                        <span style="background:var(--primary);color:#fff;padding:2px 12px;border-radius:40px;font-size:0.6rem;font-weight:600;text-transform:uppercase;"><i class="fas fa-clock"></i> URGENT</span>
+                        <p style="margin-top:4px;font-weight:500;font-size:0.8rem;color:var(--text);" id="actionDetail">Site visit within 48h · cross-check with nearby project #19234</p>
+                    </div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <button class="action-chip" data-action="review"><i class="fas fa-flag"></i> Mark reviewed</button>
+                        <button class="action-chip" data-action="assign"><i class="fas fa-user-plus"></i> Assign officer</button>
+                        <button class="action-chip" data-action="export"><i class="fas fa-file-pdf"></i> Export</button>
+                        <button class="action-chip" style="background:#f0e4e0;border-color:#b45309;color:#b45309;" data-action="escalate"><i class="fas fa-share-alt"></i> Escalate</button>
+                    </div>
+                    <div style="margin-top:8px;font-size:0.7rem;color:var(--text-secondary);display:flex;gap:10px;flex-wrap:wrap;">
+                        <span><i class="fas fa-map-pin" style="color:var(--primary);"></i> Pune district</span>
+                        <span><i class="fas fa-users"></i> 3 contractors</span>
+                        <span><i class="far fa-clock"></i> Last review: 2026-09-05</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: MAP ===== -->
+        <div class="page" id="page-map">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-map-marked-alt"></i> Interactive Risk Map · India</h3>
+                    <button class="action-link" id="downloadMapBtn"><i class="fas fa-download"></i> Download</button>
+                </div>
+                <div class="map-container" style="height:400px;">
+                    <svg viewBox="0 0 600 500" style="width:100%;height:100%;">
+                        <use href="#mapContainer svg" />
+                    </svg>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;">
+                    <div style="background:var(--input-bg);padding:8px;border-radius:10px;text-align:center;border:1px solid var(--border);"><div style="font-size:0.6rem;color:var(--text-secondary);">High Risk Districts</div><div style="font-size:1.2rem;font-weight:700;color:var(--primary);">347</div></div>
+                    <div style="background:var(--input-bg);padding:8px;border-radius:10px;text-align:center;border:1px solid var(--border);"><div style="font-size:0.6rem;color:var(--text-secondary);">Medium Risk Districts</div><div style="font-size:1.2rem;font-weight:700;color:#b45309;">1,283</div></div>
+                    <div style="background:var(--input-bg);padding:8px;border-radius:10px;text-align:center;border:1px solid var(--border);"><div style="font-size:0.6rem;color:var(--text-secondary);">Low Risk Districts</div><div style="font-size:1.2rem;font-weight:700;color:#2d6a2d;">5,102</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: PROJECTS ===== -->
+        <div class="page" id="page-projects">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-list-check"></i> All Projects</h3>
+                    <button class="action-link" id="exportProjectsBtn"><i class="fas fa-download"></i> Export CSV</button>
+                </div>
+                <div class="filter-bar">
+                    <input type="text" placeholder="🔍 Search..." id="projectSearch">
+                    <select id="filterDistrict"><option value="">All Districts</option><option>Pune</option><option>Mumbai</option><option>Nashik</option><option>Nagpur</option><option>Thane</option></select>
+                    <select id="filterType"><option value="">All Types</option><option>Road</option><option>School</option><option>Water</option><option>Healthcare</option></select>
+                    <select id="filterStatus"><option value="">All Status</option><option>Completed</option><option>Ongoing</option><option>Delayed</option><option>Stalled</option></select>
+                    <button class="apply-btn" id="applyFilters"><i class="fas fa-filter"></i> Apply</button>
+                    <button class="apply-btn" style="background:var(--input-bg);color:var(--text);" id="clearFilters"><i class="fas fa-times"></i> Clear</button>
+                </div>
+                <div class="table-wrap">
+                    <table id="allProjectsTable">
+                        <thead><tr><th>ID</th><th>Name</th><th>District</th><th>Type</th><th>MP</th><th>Budget</th><th>Status</th><th>Risk</th></tr></thead>
+                        <tbody id="allProjectsBody">
+                            <tr><td>#23871</td><td>PMGSY Road - Village A to B</td><td>Pune</td><td>Road</td><td>Dr. Sharma</td><td>₹4.2Cr</td><td><span class="status-badge delayed">Delayed</span></td><td><span class="risk-badge high">87</span></td></tr>
+                            <tr><td>#19281</td><td>Govt. School Building</td><td>Nashik</td><td>School</td><td>Ms. Patil</td><td>₹3.8Cr</td><td><span class="status-badge delayed">Delayed</span></td><td><span class="risk-badge high">81</span></td></tr>
+                            <tr><td>#18291</td><td>Drinking Water Pipeline</td><td>Mumbai</td><td>Water</td><td>Mr. Singh</td><td>₹5.1Cr</td><td><span class="status-badge ongoing">Ongoing</span></td><td><span class="risk-badge high">78</span></td></tr>
+                            <tr><td>#17452</td><td>PHC Building</td><td>Nagpur</td><td>Healthcare</td><td>Dr. Reddy</td><td>₹2.9Cr</td><td><span class="status-badge stalled">Stalled</span></td><td><span class="risk-badge high">74</span></td></tr>
+                            <tr><td>#16523</td><td>Widening of National Highway</td><td>Thane</td><td>Road</td><td>Mr. Gupta</td><td>₹3.2Cr</td><td><span class="status-badge ongoing">Ongoing</span></td><td><span class="risk-badge high">72</span></td></tr>
+                            <tr><td>#15678</td><td>Street Lighting Project</td><td>Ahmedabad</td><td>Electricity</td><td>Ms. Desai</td><td>₹4.5Cr</td><td><span class="status-badge completed">Completed</span></td><td><span class="risk-badge medium">45</span></td></tr>
+                            <tr><td>#14923</td><td>Community Hall</td><td>Hyderabad</td><td>Infrastructure</td><td>Mr. Rao</td><td>₹3.6Cr</td><td><span class="status-badge completed">Completed</span></td><td><span class="risk-badge medium">38</span></td></tr>
+                            <tr><td>#13456</td><td>School Toilet Block</td><td>Bengaluru</td><td>Sanitation</td><td>Ms. Kumar</td><td>₹4.0Cr</td><td><span class="status-badge completed">Completed</span></td><td><span class="risk-badge low">22</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top:10px;display:flex;justify-content:space-between;">
+                    <span class="text-muted" id="projectCount">Showing 8 of 12,482 projects</span>
+                    <div style="display:flex;gap:4px;">
+                        <button class="action-link pagination-btn" data-page="prev">Prev</button>
+                        <button class="action-link pagination-btn active-page" data-page="1">1</button>
+                        <button class="action-link pagination-btn" data-page="2">2</button>
+                        <button class="action-link pagination-btn" data-page="3">3</button>
+                        <button class="action-link pagination-btn" data-page="next">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: ALERTS ===== -->
+        <div class="page" id="page-alerts">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Alerts Center</h3>
+                    <button class="action-link" id="markAllRead"><i class="fas fa-check-double"></i> Mark all read</button>
+                </div>
+                <div id="alertsContainer">
+                    <div class="alert-item critical"><div style="display:flex;justify-content:space-between;"><span style="font-weight:600;">🔴 Cost Anomaly</span><span class="alert-time">2 mins ago</span></div><div class="alert-text">Project #23871 flagged for cost anomaly · 32% above comparable projects</div><div class="alert-actions"><button class="mark-read" data-id="1"><i class="fas fa-check"></i> Mark read</button><button class="dismiss-alert" data-id="1"><i class="fas fa-times"></i> Dismiss</button></div></div>
+                    <div class="alert-item high"><div style="display:flex;justify-content:space-between;"><span style="font-weight:600;">🟠 Project Delayed</span><span class="alert-time">15 mins ago</span></div><div class="alert-text">Project #19281 delayed by 3 months · schedule review required</div><div class="alert-actions"><button class="mark-read" data-id="2"><i class="fas fa-check"></i> Mark read</button><button class="dismiss-alert" data-id="2"><i class="fas fa-times"></i> Dismiss</button></div></div>
+                    <div class="alert-item high"><div style="display:flex;justify-content:space-between;"><span style="font-weight:600;">🟠 Duplicate Detected</span><span class="alert-time">1 hour ago</span></div><div class="alert-text">Duplicate project detected · #18291 94% similar to #17834 within 0.8km</div><div class="alert-actions"><button class="mark-read" data-id="3"><i class="fas fa-check"></i> Mark read</button><button class="dismiss-alert" data-id="3"><i class="fas fa-times"></i> Dismiss</button></div></div>
+                    <div class="alert-item moderate"><div style="display:flex;justify-content:space-between;"><span style="font-weight:600;">🟣 Payment Anomaly</span><span class="alert-time">3 hours ago</span></div><div class="alert-text">Payment anomaly detected in project #17452 · irregular transaction pattern</div><div class="alert-actions"><button class="mark-read" data-id="4"><i class="fas fa-check"></i> Mark read</button><button class="dismiss-alert" data-id="4"><i class="fas fa-times"></i> Dismiss</button></div></div>
+                    <div class="alert-item resolved"><div style="display:flex;justify-content:space-between;"><span style="font-weight:600;">🟢 Resolved</span><span class="alert-time">5 hours ago</span></div><div class="alert-text">Project #15678 flagged for review · verified and cleared</div><div class="alert-actions"><button class="mark-read" data-id="5"><i class="fas fa-check"></i> Mark read</button><button class="dismiss-alert" data-id="5"><i class="fas fa-times"></i> Dismiss</button></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: COST ANOMALIES ===== -->
+        <div class="page" id="page-cost">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-coins"></i> Cost Anomalies</h3><span style="background:#f0e4e0;padding:2px 12px;border-radius:40px;font-size:0.7rem;font-weight:600;color:var(--primary);">193 total</span></div>
+                <div id="costList">
+                    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);"><div><strong>#23871</strong> · Pune · Road</div><div><span style="color:var(--primary);font-weight:700;">+32%</span> <span style="background:#f0e4e0;padding:2px 10px;border-radius:40px;font-size:0.6rem;font-weight:600;color:var(--primary);margin-left:6px;">Critical</span></div></div>
+                    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);"><div><strong>#19281</strong> · Nashik · School</div><div><span style="color:#b45309;font-weight:700;">+18%</span> <span style="background:#f0e4d0;padding:2px 10px;border-radius:40px;font-size:0.6rem;font-weight:600;color:#b45309;margin-left:6px;">Moderate</span></div></div>
+                    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);"><div><strong>#18291</strong> · Mumbai · Water</div><div><span style="color:#b45309;font-weight:700;">+21%</span> <span style="background:#f0e4d0;padding:2px 10px;border-radius:40px;font-size:0.6rem;font-weight:600;color:#b45309;margin-left:6px;">Moderate</span></div></div>
+                    <div style="display:flex;justify-content:space-between;padding:8px 0;"><div><strong>#17452</strong> · Nagpur · Healthcare</div><div><span style="color:#7c3aed;font-weight:700;">+15%</span> <span style="background:#ede9fe;padding:2px 10px;border-radius:40px;font-size:0.6rem;font-weight:600;color:#7c3aed;margin-left:6px;">Low</span></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: DELAYED ===== -->
+        <div class="page" id="page-delayed">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-clock"></i> Delayed Projects</h3><span style="background:#f0e4d0;padding:2px 12px;border-radius:40px;font-size:0.7rem;font-weight:600;color:#b45309;">812 total</span></div>
+                <div id="delayList">
+                    <div style="display:flex;align-items:center;gap:12px;padding:6px 12px;background:var(--input-bg);border-radius:10px;margin-bottom:6px;border:1px solid var(--border);"><span style="font-weight:600;width:60px;">#19281</span><span style="width:80px;">Nashik</span><div style="flex:1;height:5px;background:var(--border);border-radius:40px;overflow:hidden;"><div style="height:100%;width:85%;background:var(--primary);border-radius:40px;"></div></div><span style="font-weight:600;font-size:0.8rem;color:var(--primary);">85%</span><span style="font-size:0.65rem;color:var(--text-secondary);">3 months</span></div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:6px 12px;background:var(--input-bg);border-radius:10px;margin-bottom:6px;border:1px solid var(--border);"><span style="font-weight:600;width:60px;">#17452</span><span style="width:80px;">Nagpur</span><div style="flex:1;height:5px;background:var(--border);border-radius:40px;overflow:hidden;"><div style="height:100%;width:55%;background:#b45309;border-radius:40px;"></div></div><span style="font-weight:600;font-size:0.8rem;color:#b45309;">55%</span><span style="font-size:0.65rem;color:var(--text-secondary);">1.5 months</span></div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:6px 12px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);"><span style="font-weight:600;width:60px;">#16523</span><span style="width:80px;">Thane</span><div style="flex:1;height:5px;background:var(--border);border-radius:40px;overflow:hidden;"><div style="height:100%;width:40%;background:#b45309;border-radius:40px;"></div></div><span style="font-weight:600;font-size:0.8rem;color:#b45309;">40%</span><span style="font-size:0.65rem;color:var(--text-secondary);">1 month</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: DUPLICATES ===== -->
+        <div class="page" id="page-duplicates">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-copy"></i> Duplicate Detection</h3><span style="background:#ede9fe;padding:2px 12px;border-radius:40px;font-size:0.7rem;font-weight:600;color:#7c3aed;">47 potential</span></div>
+                <div style="background:var(--input-bg);padding:12px 16px;border-radius:12px;margin-bottom:8px;border:1px solid var(--border);">
+                    <div style="display:flex;justify-content:space-between;"><div><strong>#18291</strong> · Mumbai <span style="font-size:0.7rem;color:var(--text-secondary);margin-left:8px;">vs #17834 · Mumbai</span></div><span style="font-size:1.2rem;font-weight:700;color:var(--primary);">94%</span></div>
+                    <div style="display:flex;gap:12px;margin-top:4px;font-size:0.65rem;color:var(--text-secondary);"><span><i class="fas fa-map-pin"></i> 0.8 km apart</span><span><i class="fas fa-building"></i> Same contractor</span></div>
+                    <button class="action-link" style="margin-top:6px;color:var(--primary);font-size:0.7rem;border:none;background:none;cursor:pointer;"><i class="fas fa-flag"></i> Flag for investigation</button>
+                </div>
+                <div style="background:var(--input-bg);padding:12px 16px;border-radius:12px;border:1px solid var(--border);">
+                    <div style="display:flex;justify-content:space-between;"><div><strong>#15678</strong> · Ahmedabad <span style="font-size:0.7rem;color:var(--text-secondary);margin-left:8px;">vs #15234 · Gandhinagar</span></div><span style="font-size:1.2rem;font-weight:700;color:var(--primary);">87%</span></div>
+                    <div style="display:flex;gap:12px;margin-top:4px;font-size:0.65rem;color:var(--text-secondary);"><span><i class="fas fa-map-pin"></i> 2.3 km apart</span><span><i class="fas fa-building"></i> Different contractors</span></div>
+                    <button class="action-link" style="margin-top:6px;color:var(--primary);font-size:0.7rem;border:none;background:none;cursor:pointer;"><i class="fas fa-flag"></i> Flag for investigation</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: REPORTS ===== -->
+        <div class="page" id="page-reports">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-file-pdf"></i> Export Reports</h3><span style="font-size:0.7rem;color:var(--text-secondary);">Generated: <span id="reportDate"></span></span></div>
+                <div class="report-grid">
+                    <div class="report-card"><i class="fas fa-file-pdf"></i><div class="report-name">Risk Summary</div><div class="report-desc">347 high-risk projects</div><button class="download-btn" data-report="risk">Download PDF</button></div>
+                    <div class="report-card"><i class="fas fa-file-excel"></i><div class="report-name">Projects Data</div><div class="report-desc">All 12,482 projects</div><button class="download-btn" data-report="csv">Download CSV</button></div>
+                    <div class="report-card"><i class="fas fa-chart-pie"></i><div class="report-name">Analytics</div><div class="report-desc">Interactive charts</div><button class="download-btn" data-report="analytics">View Online</button></div>
+                    <div class="report-card"><i class="fas fa-print"></i><div class="report-name">Print</div><div class="report-desc">Current view</div><button class="download-btn" data-report="print">Print</button></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: SETTINGS ===== -->
+        <div class="page" id="page-settings">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-sliders-h"></i> Settings</h3></div>
+                <div style="margin-bottom:14px;">
+                    <h4 style="font-size:0.8rem;color:var(--text);margin-bottom:8px;">General</h4>
+                    <div class="settings-row"><span>Dark Mode</span><button class="toggle" id="darkModeToggle"><span class="slider"></span></button></div>
+                    <div class="settings-row"><span>Email Notifications</span><button class="toggle active" id="emailToggle"><span class="slider"></span></button></div>
+                    <div class="settings-row"><span>Push Notifications</span><button class="toggle active" id="pushToggle"><span class="slider"></span></button></div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <h4 style="font-size:0.8rem;color:var(--text);margin-bottom:8px;">Thresholds</h4>
+                    <div class="settings-row"><span>High Risk Threshold</span><span style="font-weight:600;color:var(--primary);">80%</span></div>
+                    <div class="settings-row"><span>Cost Anomaly Threshold</span><span style="font-weight:600;color:#7c3aed;">15%</span></div>
+                </div>
+                <div>
+                    <h4 style="font-size:0.8rem;color:var(--text);margin-bottom:8px;">Data</h4>
+                    <div class="settings-row"><span>eSAKSHI Portal</span><span style="color:#2d6a2d;font-weight:600;font-size:0.75rem;"><i class="fas fa-check-circle"></i> Connected</span></div>
+                    <div class="settings-row"><span>Last Sync</span><span style="color:var(--text-secondary);font-size:0.75rem;" id="lastSync">Sep 05, 2026 10:30 AM</span></div>
+                    <button class="action-link" style="background:var(--primary);color:#fff;padding:6px 20px;border-radius:40px;margin-top:6px;font-size:0.75rem;border:none;cursor:pointer;" id="syncNow"><i class="fas fa-sync-alt"></i> Sync Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <span><i class="fas fa-database"></i> MPLADS AI · 12,482 projects · 732 districts</span>
+            <span class="status"><i class="fas fa-circle"></i> Live · eSAKSHI Portal</span>
+            <span>MoSPI · DIIID</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <h3 id="modalTitle">Confirm Action</h3>
+        <p id="modalMessage">Are you sure?</p>
+        <div class="modal-actions">
+            <button class="btn-secondary" id="modalCancel">Cancel</button>
+            <button class="btn-primary" id="modalConfirm">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============================================================
+// MPLADS DASHBOARD - FULL JAVASCRIPT
+// ============================================================
+
+// ===== DATA =====
+const projectData = {
+    23871: {
+        signals: [
+            { name: "Cost anomaly", val: 24 },
+            { name: "Progress mismatch", val: 21 },
+            { name: "Delay probability", val: 18 },
+            { name: "Duplicate similarity", val: 14 },
+            { name: "Payment anomaly", val: 10 }
+        ],
+        flagged: {
+            cost: "32% above comparable",
+            funds: "76%",
+            physical: "39%",
+            similarity: "91% similarity with #17834 within 1.4 km",
+            action: "Priority field verification",
+            actionDetail: "Site visit within 48h · cross-check with nearby project #19234",
+            detailFlags: [
+                { label: "Cost anomaly", detail: "+24 · 32% above avg", cls: "red" },
+                { label: "Progress mismatch", detail: "+21 · 76% funds vs 39% physical", cls: "orange" },
+                { label: "Delay probability", detail: "+18 · schedule slippage", cls: "orange" },
+                { label: "Duplicate similarity", detail: "+14 · 91% similar (1.4km)", cls: "purple" },
+                { label: "Payment anomaly", detail: "+10 · irregular transactions", cls: "red" }
+            ]
+        }
+    },
+    19281: {
+        signals: [
+            { name: "Delay probability", val: 22 },
+            { name: "Progress mismatch", val: 19 },
+            { name: "Cost anomaly", val: 16 },
+            { name: "Payment anomaly", val: 12 },
+            { name: "Duplicate similarity", val: 12 }
+        ],
+        flagged: {
+            cost: "18% above comparable",
+            funds: "68%",
+            physical: "31%",
+            similarity: "79% similarity with #18934 within 2.2 km",
+            action: "Schedule review",
+            actionDetail: "Review timeline and contractor performance · hold meeting with district authority",
+            detailFlags: [
+                { label: "Delay probability", detail: "+22 · 3 months behind", cls: "orange" },
+                { label: "Progress mismatch", detail: "+19 · 68% funds vs 31% physical", cls: "red" },
+                { label: "Cost anomaly", detail: "+16 · 18% above avg", cls: "orange" },
+                { label: "Payment anomaly", detail: "+12 · delayed payments", cls: "red" },
+                { label: "Duplicate similarity", detail: "+12 · 79% similar (2.2km)", cls: "purple" }
+            ]
+        }
+    },
+    18291: {
+        signals: [
+            { name: "Duplicate similarity", val: 26 },
+            { name: "Cost anomaly", val: 17 },
+            { name: "Progress mismatch", val: 15 },
+            { name: "Payment anomaly", val: 11 },
+            { name: "Delay probability", val: 9 }
+        ],
+        flagged: {
+            cost: "21% above comparable",
+            funds: "82%",
+            physical: "53%",
+            similarity: "94% similarity with #17834 within 0.8 km",
+            action: "Duplicate verification",
+            actionDetail: "Field inspection to verify duplicate work · coordinate with district engineer",
+            detailFlags: [
+                { label: "Duplicate similarity", detail: "+26 · 94% similar (0.8km)", cls: "purple" },
+                { label: "Cost anomaly", detail: "+17 · 21% above avg", cls: "red" },
+                { label: "Progress mismatch", detail: "+15 · 82% funds vs 53% physical", cls: "orange" },
+                { label: "Payment anomaly", detail: "+11 · irregular pattern", cls: "red" },
+                { label: "Delay probability", detail: "+9 · minor slippage", cls: "orange" }
+            ]
+        }
+    },
+    17452: {
+        signals: [
+            { name: "Payment anomaly", val: 28 },
+            { name: "Cost anomaly", val: 18 },
+            { name: "Progress mismatch", val: 14 },
+            { name: "Delay probability", val: 11 },
+            { name: "Duplicate similarity", val: 7 }
+        ],
+        flagged: {
+            cost: "15% above comparable",
+            funds: "71%",
+            physical: "48%",
+            similarity: "62% similarity within 3.1 km",
+            action: "Audit payments",
+            actionDetail: "Forensic audit of all payment transactions · verify with bank records",
+            detailFlags: [
+                { label: "Payment anomaly", detail: "+28 · suspicious transaction pattern", cls: "red" },
+                { label: "Cost anomaly", detail: "+18 · 15% above avg", cls: "orange" },
+                { label: "Progress mismatch", detail: "+14 · 71% funds vs 48% physical", cls: "orange" },
+                { label: "Delay probability", detail: "+11 · minor delay", cls: "orange" },
+                { label: "Duplicate similarity", detail: "+7 · 62% similar", cls: "purple" }
+            ]
+        }
+    },
+    16523: {
+        signals: [
+            { name: "Progress mismatch", val: 25 },
+            { name: "Cost anomaly", val: 18 },
+            { name: "Delay probability", val: 16 },
+            { name: "Payment anomaly", val: 10 },
+            { name: "Duplicate similarity", val: 6 }
+        ],
+        flagged: {
+            cost: "12% above comparable",
+            funds: "58%",
+            physical: "27%",
+            similarity: "53% similarity within 2.8 km",
+            action: "Progress review",
+            actionDetail: "Site inspection to verify physical progress · contractor meeting scheduled",
+            detailFlags: [
+                { label: "Progress mismatch", detail: "+25 · 58% funds vs 27% physical", cls: "red" },
+                { label: "Cost anomaly", detail: "+18 · 12% above avg", cls: "orange" },
+                { label: "Delay probability", detail: "+16 · significant delay", cls: "orange" },
+                { label: "Payment anomaly", detail: "+10 · irregular payments", cls: "red" },
+                { label: "Duplicate similarity", detail: "+6 · 53% similar", cls: "purple" }
+            ]
+        }
+    }
+};
+
+const allProjects = [
+    { id: "#23871", name: "PMGSY Road - Village A to B", district: "Pune", type: "Road", mp: "Dr. Sharma", budget: "₹4.2Cr", status: "Delayed", risk: 87 },
+    { id: "#19281", name: "Govt. School Building", district: "Nashik", type: "School", mp: "Ms. Patil", budget: "₹3.8Cr", status: "Delayed", risk: 81 },
+    { id: "#18291", name: "Drinking Water Pipeline", district: "Mumbai", type: "Water", mp: "Mr. Singh", budget: "₹5.1Cr", status: "Ongoing", risk: 78 },
+    { id: "#17452", name: "PHC Building", district: "Nagpur", type: "Healthcare", mp: "Dr. Reddy", budget: "₹2.9Cr", status: "Stalled", risk: 74 },
+    { id: "#16523", name: "Widening of National Highway", district: "Thane", type: "Road", mp: "Mr. Gupta", budget: "₹3.2Cr", status: "Ongoing", risk: 72 },
+    { id: "#15678", name: "Street Lighting Project", district: "Ahmedabad", type: "Electricity", mp: "Ms. Desai", budget: "₹4.5Cr", status: "Completed", risk: 45 },
+    { id: "#14923", name: "Community Hall", district: "Hyderabad", type: "Infrastructure", mp: "Mr. Rao", budget: "₹3.6Cr", status: "Completed", risk: 38 },
+    { id: "#13456", name: "School Toilet Block", district: "Bengaluru", type: "Sanitation", mp: "Ms. Kumar", budget: "₹4.0Cr", status: "Completed", risk: 22 }
+];
+
+// ===== STATE =====
+let currentProjectId = 23871;
+let alertCount = 5;
+let isDarkMode = localStorage.getItem('mplads-theme') === 'dark';
+let modalCallback = null;
+
+// ===== DOM HELPERS =====
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+function showToast(msg, type = 'success') {
+    const c = $('#toastContainer');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    const icon = type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-circle' : 'fa-info-circle';
+    t.innerHTML = `<i class="fas ${icon}"></i> ${msg}`;
+    c.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(50px)'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+function showModal(title, msg, cb) {
+    $('#modalTitle').textContent = title;
+    $('#modalMessage').textContent = msg;
+    $('#modalOverlay').classList.add('show');
+    modalCallback = cb;
+}
+
+function closeModal() {
+    $('#modalOverlay').classList.remove('show');
+    modalCallback = null;
+}
+
+function navigateTo(page) {
+    $$('.page').forEach(el => el.classList.remove('active'));
+    const target = $(`#page-${page}`);
+    if (target) target.classList.add('active');
+    $$('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
+    const nav = document.querySelector(`.sidebar .nav-item[data-page="${page}"]`);
+    if (nav) nav.classList.add('active');
+    const names = { dashboard: 'MPLADS Dashboard', map: 'Risk Map', projects: 'Projects', alerts: 'Alerts', cost: 'Cost Anomalies', delayed: 'Delayed', duplicates: 'Duplicates', reports: 'Reports', settings: 'Settings' };
+    // update page title if needed
+}
+
+function updatePanel(id) {
+    const data = projectData[id];
+    if (!data) return;
+    currentProjectId = id;
+    const scores = { 23871: 87, 19281: 81, 18291: 78, 17452: 74, 16523: 72 };
+    $('#riskScore').textContent = scores[id] || 87;
+    $('#signalsContainer').innerHTML = data.signals.map(s =>
+        `<span class="signal-item"><span class="name">${s.name}</span> <span class="val">+${s.val}</span></span>`
+    ).join('');
+    const f = data.flagged;
+    $('#costDetail').textContent = f.cost;
+    $('#fundsDetail').textContent = f.funds;
+    $('#physicalDetail').textContent = f.physical;
+    $('#similarityDetail').innerHTML = `<i class="fas fa-copy"></i> ${f.similarity}`;
+    $('#actionText').textContent = f.action;
+    $('#actionDetail').textContent = f.actionDetail;
+    $('#detailFlags').innerHTML = f.detailFlags.map(d =>
+        `<div class="flag-detail"><span>${d.label}</span> <span class="val ${d.cls}">${d.detail}</span></div>`
+    ).join('');
+    const row = document.querySelector(`tr[data-id="${id}"]`);
+    if (row) {
+        const dist = row.cells[1]?.textContent || '';
+        document.querySelector('.project-id').innerHTML = `#${id} <small>${dist} · MPLADS</small>`;
+    }
+    $$('#projectTable tbody tr').forEach(r => r.style.background = '');
+    if (row) row.style.background = 'var(--table-hover)';
+}
+
+// ===== ROLE =====
+function updateRole(role) {
+    const data = {
+        citizen: { total: '1,247', high: '28', delayed: '47', anomaly: '12' },
+        mp: { total: '1,247', high: '28', delayed: '47', anomaly: '12' },
+        district: { total: '4,892', high: '184', delayed: '659', anomaly: '193' },
+        ministry: { total: '12,482', high: '347', delayed: '812', anomaly: '193' }
+    };
+    const d = data[role] || data.ministry;
+    $('#kpiTotal').textContent = d.total;
+    $('#kpiHighRisk').textContent = d.high;
+    $('#kpiDelayed').textContent = d.delayed;
+    $('#kpiAnomaly').textContent = d.anomaly;
+    showToast(`👤 Switched to ${role.charAt(0).toUpperCase() + role.slice(1)} view`, 'success');
+}
+
+// ===== FILTERS =====
+function applyFilters() {
+    const search = $('#projectSearch').value.toLowerCase();
+    const district = $('#filterDistrict').value;
+    const type = $('#filterType').value;
+    const status = $('#filterStatus').value;
+    const rows = $$('#allProjectsBody tr');
+    let count = 0;
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const rowDist = row.cells[2]?.textContent || '';
+        const rowType = row.cells[3]?.textContent || '';
+        const rowStatus = row.cells[6]?.textContent || '';
+        let show = true;
+        if (search && !text.includes(search)) show = false;
+        if (district && rowDist !== district) show = false;
+        if (type && rowType !== type) show = false;
+        if (status && !rowStatus.includes(status)) show = false;
+        row.style.display = show ? '' : 'none';
+        if (show) count++;
+    });
+    $('#projectCount').textContent = `Showing ${count} of ${allProjects.length} projects`;
+    showToast(`🔍 Showing ${count} projects`, 'info');
+}
+
+// ===== EXPORT =====
+function exportCSV() {
+    const headers = ['ID', 'Name', 'District', 'Type', 'MP', 'Budget', 'Status', 'Risk'];
+    let csv = headers.join(',') + '\n';
+    allProjects.forEach(p => {
+        csv += [p.id, p.name, p.district, p.type, p.mp, p.budget, p.status, p.risk].join(',') + '\n';
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mplads_projects_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('📥 CSV exported', 'success');
+}
+
+function exportPDF() {
+    showToast('📄 Generating PDF...', 'info');
+    setTimeout(() => {
+        const content = `MPLADS Risk Report\nGenerated: ${new Date().toLocaleString()}\n----------------------------------------\nTotal Projects: 12,482\nHigh Risk: 347\nDelayed: 812\nCost Anomalies: 193\n\nTop 5 High Risk:\n#23871 - Pune - 87\n#19281 - Nashik - 81\n#18291 - Mumbai - 78\n#17452 - Nagpur - 74\n#16523 - Thane - 72`;
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `mplads_report_${new Date().toISOString().slice(0,10)}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('✅ Report downloaded', 'success');
+    }, 1000);
+}
+
+// ============================================================
+// EVENT HANDLERS
+// ============================================================
+
+// Role
+$('#roleSelector').addEventListener('change', function() { updateRole(this.value); });
+
+// Sidebar Navigation
+$$('.sidebar .nav-item').forEach(item => {
+    item.addEventListener('click', function() {
+        navigateTo(this.dataset.page);
+        showToast(`📄 ${this.textContent.trim()}`, 'success');
+    });
+});
+
+// Project Table Click
+$$('#projectTable tbody tr').forEach(row => {
+    row.addEventListener('click', function() {
+        const id = parseInt(this.dataset.id);
+        if (id) { updatePanel(id); navigateTo('dashboard'); showToast(`📋 Loaded #${id}`, 'success'); }
+    });
+});
+
+// Action Button
+$('#actionBtn').addEventListener('click', function() {
+    const action = $('#actionText').textContent;
+    showModal('Confirm Action', `Perform "${action}" on #${currentProjectId}?`, function() {
+        showToast(`✅ ${action} initiated`, 'success');
+        closeModal();
+    });
+});
+
+// Action Chips
+$$('.action-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+        const action = this.dataset.action;
+        const labels = { review: 'Mark Reviewed', assign: 'Assign Officer', export: 'Export Report', escalate: 'Escalate' };
+        showModal(`Confirm ${labels[action] || action}`, `"${labels[action] || action}" for #${currentProjectId}?`, function() {
+            showToast(`✅ ${labels[action] || action} completed`, 'success');
+            closeModal();
+        });
+    });
+});
+
+// Modal
+$('#modalCancel').addEventListener('click', closeModal);
+$('#modalConfirm').addEventListener('click', function() { if (modalCallback) modalCallback(); });
+$('#modalOverlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+// Notifications
+$('#notifBtn').addEventListener('click', function() { navigateTo('alerts'); });
+
+// Refresh
+$('#refreshBtn').addEventListener('click', function() {
+    const icon = this.querySelector('i');
+    icon.classList.add('fa-spin');
+    showToast('🔄 Refreshing...', 'info');
+    setTimeout(() => {
+        icon.classList.remove('fa-spin');
+        showToast('✅ Refreshed', 'success');
+        $('#lastSync').textContent = new Date().toLocaleString();
+    }, 1500);
+});
+
+// Theme
+$('#themeBtn').addEventListener('click', function() {
+    isDarkMode = !isDarkMode;
+    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    localStorage.setItem('mplads-theme', isDarkMode ? 'dark' : 'light');
+    this.querySelector('i').className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+    showToast(`🌓 ${isDarkMode ? 'Dark' : 'Light'} mode`, 'success');
+});
+
+// Fullscreen Map
+$('#fullscreenMapBtn').addEventListener('click', function() {
+    const el = $('#mapContainer');
+    if (!document.fullscreenElement) el.requestFullscreen().catch(() => {});
+    else document.exitFullscreen();
+    showToast('🗺️ Fullscreen toggled', 'info');
+});
+
+// Map Click
+$('#mapContainer').addEventListener('click', function(e) {
+    const dist = e.target.closest('.district');
+    if (dist) {
+        const name = dist.dataset.district;
+        const risk = dist.dataset.risk;
+        showToast(`📍 ${name} - ${risk.toUpperCase()} risk`, 'warning');
+    } else {
+        navigateTo('map');
+    }
+});
+
+// View All Projects
+$('#viewAllProjects').addEventListener('click', function() { navigateTo('projects'); });
+
+// User Profile
+$('#userProfileBtn').addEventListener('click', function() {
+    showModal('User Profile', '👤 Admin User\n🏛️ MoSPI · DIIID\n📋 System Administrator\n⏰ Last Login: Today, 10:30 AM', function() {
+        showToast('👤 Profile updated', 'success');
+        closeModal();
+    });
+});
+
+// Sign Out
+$('#signOutBtn').addEventListener('click', function() {
+    showModal('Sign Out', 'Are you sure you want to sign out?', function() {
+        showToast('👋 Signed out', 'success');
+        closeModal();
+        $$('.sidebar .nav-item, .action-chip, .action-btn, .kpi-card, #refreshBtn').forEach(el => {
+            el.style.opacity = '0.5';
+            el.style.pointerEvents = 'none';
+        });
+        $('#signOutBtn').innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+        $('#signOutBtn').onclick = function() { location.reload(); };
+        showToast('🔐 Click "Sign In" to restore', 'warning');
+    });
+});
+
+// Mark All Read
+$('#markAllRead').addEventListener('click', function() {
+    $$('.alert-item').forEach(el => { el.style.opacity = '0.5'; el.style.pointerEvents = 'none'; });
+    alertCount = 0;
+    $('#notifCount').textContent = '0';
+    $('#notifDot').style.display = 'none';
+    showToast('✅ All read', 'success');
+});
+
+// Mark Read & Dismiss
+$$('.mark-read').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const el = this.closest('.alert-item');
+        el.style.opacity = '0.5';
+        el.style.pointerEvents = 'none';
+        alertCount = Math.max(0, alertCount - 1);
+        $('#notifCount').textContent = alertCount;
+        if (alertCount === 0) $('#notifDot').style.display = 'none';
+        showToast('✅ Marked read', 'success');
+    });
+});
+$$('.dismiss-alert').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const el = this.closest('.alert-item');
+        el.style.display = 'none';
+        alertCount = Math.max(0, alertCount - 1);
+        $('#notifCount').textContent = alertCount;
+        if (alertCount === 0) $('#notifDot').style.display = 'none';
+        showToast('🗑️ Dismissed', 'info');
+    });
+});
+
+// Filters
+$('#applyFilters').addEventListener('click', applyFilters);
+$('#clearFilters').addEventListener('click', function() {
+    $('#projectSearch').value = '';
+    $('#filterDistrict').value = '';
+    $('#filterType').value = '';
+    $('#filterStatus').value = '';
+    applyFilters();
+    showToast('🧹 Filters cleared', 'info');
+});
+$('#projectSearch').addEventListener('keyup', function(e) { if (e.key === 'Enter') applyFilters(); });
+
+// Export
+$('#exportProjectsBtn').addEventListener('click', exportCSV);
+
+// Report Downloads
+$$('.download-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const report = this.dataset.report;
+        if (report === 'risk' || report === 'pdf') exportPDF();
+        else if (report === 'csv') exportCSV();
+        else if (report === 'analytics') { showToast('📊 Loading analytics...', 'info'); setTimeout(() => showToast('✅ Loaded', 'success'), 1000); }
+        else if (report === 'print') { window.print(); showToast('🖨️ Print opened', 'info'); }
+    });
+});
+
+// Download Map
+$('#downloadMapBtn').addEventListener('click', function() {
+    showToast('🗺️ Downloading map...', 'info');
+    setTimeout(() => showToast('✅ Map downloaded', 'success'), 1000);
+});
+
+// Settings Toggles
+$$('.toggle').forEach(toggle => {
+    toggle.addEventListener('click', function() {
+        this.classList.toggle('active');
+        const label = this.closest('.settings-row').querySelector('span').textContent;
+        const state = this.classList.contains('active') ? 'enabled' : 'disabled';
+        showToast(`⚙️ ${label} ${state}`, 'success');
+        const slider = this.querySelector('.slider');
+        if (this.classList.contains('active')) {
+            this.style.background = 'var(--primary)';
+            slider.style.left = '21px';
+        } else {
+            this.style.background = 'var(--border)';
+            slider.style.left = '3px';
+        }
+    });
+});
+
+// Dark Mode Toggle in Settings
+$('#darkModeToggle').addEventListener('click', function() {
+    isDarkMode = !isDarkMode;
+    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    localStorage.setItem('mplads-theme', isDarkMode ? 'dark' : 'light');
+    $('#themeBtn').querySelector('i').className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+    showToast(`🌓 ${isDarkMode ? 'Dark' : 'Light'} mode`, 'success');
+});
+
+// Sync Now
+$('#syncNow').addEventListener('click', function() {
+    showToast('🔄 Syncing...', 'info');
+    setTimeout(() => {
+        $('#lastSync').textContent = new Date().toLocaleString();
+        showToast('✅ Synced', 'success');
+    }, 1500);
+});
+
+// Date Picker
+$('#datePicker').addEventListener('change', function() {
+    if (this.value) showToast(`📅 ${new Date(this.value).toLocaleDateString()}`, 'info');
+});
+
+// Pagination
+$$('.pagination-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        $$('.pagination-btn').forEach(b => b.classList.remove('active-page'));
+        if (this.dataset.page === 'prev') {
+            const current = document.querySelector('.pagination-btn.active-page');
+            const prev = current?.previousElementSibling;
+            if (prev) prev.classList.add('active-page');
+        } else if (this.dataset.page === 'next') {
+            const current = document.querySelector('.pagination-btn.active-page');
+            const next = current?.nextElementSibling;
+            if (next) next.classList.add('active-page');
+        } else {
+            this.classList.add('active-page');
+        }
+        showToast('📄 Page changed', 'info');
+    });
+});
+
+// Duplicate Flag
+$$('#duplicatesList .action-link, #page-duplicates .action-link').forEach(btn => {
+    btn.addEventListener('click', function() {
+        showModal('Flag Duplicate', 'Flag this as duplicate for investigation?', function() {
+            showToast('✅ Flagged for investigation', 'success');
+            closeModal();
+        });
+    });
+});
+
+// ESC Key
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+// Keyboard Shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'r') { e.preventDefault(); $('#refreshBtn').click(); }
+    if (e.ctrlKey && e.key === 'd') { e.preventDefault(); $('#themeBtn').click(); }
+});
+
+// ============================================================
+// INIT
+// ============================================================
+
+// Set theme
+if (isDarkMode) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    $('#themeBtn').querySelector('i').className = 'fas fa-sun';
+}
+
+// Set date
+const today = new Date().toISOString().slice(0, 10);
+$('#datePicker').value = today;
+$('#reportDate').textContent = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+// Initial load
+updatePanel(23871);
+updateRole('mp');
+
+// Show alert count
+$('#notifCount').textContent = alertCount;
+
+showToast('🚀 MPLADS AI Risk Intelligence loaded', 'success');
+console.log('📊 Real MPLADS Data: Gujarat - 8,872 completed, J&K - Jitendra Singh 177 works completed');
+</script>
+
+</body>
+</html>

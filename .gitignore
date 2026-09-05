@@ -1,27 +1,9 @@
-# Environment variables
-.env
-.env.local
-
-# Python
+﻿venv/
 __pycache__/
-*.py[cod]
-*$py.class
-venv/
-env/
-.pytest_cache/
-
-# Node
 node_modules/
-dist/
+*.db
 .next/
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Notebooks
-.ipynb_checkpoints/
-
-# Data
-data/sample/*.csv
-!data/sample/.gitkeep
+.env.local
+allocated.csv
+exp.csv
+scratch/

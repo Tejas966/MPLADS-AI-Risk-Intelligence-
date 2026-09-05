@@ -4,7 +4,7 @@ import { useEffect, useState, use } from 'react';
 
 export default function ProjectRiskPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,24 +22,24 @@ export default function ProjectRiskPage({ params }: { params: Promise<{ id: stri
   }, [resolvedParams.id]);
 
   if (loading) return <div className="p-8 text-center">Loading Risk Fingerprint...</div>;
-  if (!data || data.detail) return <div className="p-8 text-center text-red-500">{data?.detail || "Project Not Found"}</div>;
+  if (!data || 'detail' in data) return <div className="p-8 text-center text-red-500">{data && 'detail' in data ? String(data.detail) : "Project Not Found"}</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-8">
       <div className="max-w-5xl mx-auto bg-white rounded-xl shadow p-8 border border-gray-200">
         <header className="flex justify-between items-start mb-8 border-b pb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">{data.project_id}</h1>
-            <p className="text-gray-500 mt-2">{data.description}</p>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">{String(data.project_id)}</h1>
+            <p className="text-gray-500 mt-2">{String(data.description)}</p>
             <div className="flex gap-4 mt-4">
-              <span className="px-3 py-1 bg-gray-100 text-sm font-medium rounded-md">{data.district}, {data.state}</span>
-              <span className="px-3 py-1 bg-gray-100 text-sm font-medium rounded-md">{data.mp_name}</span>
+              <span className="px-3 py-1 bg-gray-100 text-sm font-medium rounded-md">{String(data.district)}, {String(data.state)}</span>
+              <span className="px-3 py-1 bg-gray-100 text-sm font-medium rounded-md">{String(data.mp_name)}</span>
             </div>
           </div>
           <div className={`px-6 py-4 rounded-lg text-center ${data.risk_level === 'HIGH' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
             <div className="text-sm font-bold uppercase tracking-wider mb-1">Overall Risk</div>
-            <div className="text-xxl font-extrabold">{data.risk_score}</div>
-            <div className="text-sm mt-1">{data.risk_level}</div>
+            <div className="text-xxl font-extrabold">{String(data.risk_score)}</div>
+            <div className="text-sm mt-1">{String(data.risk_level)}</div>
           </div>
         </header>
 
@@ -50,7 +50,7 @@ export default function ProjectRiskPage({ params }: { params: Promise<{ id: stri
               Risk Fingerprint
             </h2>
             <div className="space-y-4">
-              {Object.entries(data.signals).map(([key, val]: any) => (
+              {Object.entries((data.signals as Record<string, number>) || {}).map(([key, val]) => (
                 <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
                   <span className="font-medium capitalize text-gray-700">{key.replace('_', ' ')}</span>
                   <div className="flex items-center gap-4">
@@ -68,7 +68,7 @@ export default function ProjectRiskPage({ params }: { params: Promise<{ id: stri
             
             <div className="mt-8 p-6 bg-blue-50 border border-blue-100 rounded-lg">
               <h3 className="font-bold text-blue-900 mb-2">Recommendation</h3>
-              <p className="text-blue-800">{data.recommendation}</p>
+              <p className="text-blue-800">{String(data.recommendation)}</p>
             </div>
           </section>
 
@@ -78,7 +78,7 @@ export default function ProjectRiskPage({ params }: { params: Promise<{ id: stri
               Why was this flagged?
             </h2>
             <div className="space-y-4">
-              {data.explanations.map((exp: any, idx: number) => (
+              {((data.explanations as Array<{type: string, severity: string, reason: string}>) || []).map((exp, idx: number) => (
                 <div key={idx} className="p-4 border-l-4 border-red-500 bg-red-50 rounded-r-lg">
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-sm font-bold text-red-800 uppercase">{exp.type.replace('_', ' ')}</span>

@@ -1,7 +1,10 @@
-﻿"use client";
+"use client";
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
+import MetricCard from "@/components/MetricCard";
+import StatusBadge from "@/components/StatusBadge";
+import ProgressBar from "@/components/ProgressBar";
 
 interface Explanation {
   type: string;
@@ -47,12 +50,6 @@ function fmt(n: number) {
   return `₹${n.toLocaleString("en-IN")}`;
 }
 
-const SEV_COLORS: Record<string, string> = {
-  HIGH: "border-red-500 bg-red-950 text-red-300",
-  MEDIUM: "border-amber-500 bg-amber-950 text-amber-300",
-  LOW: "border-green-500 bg-green-950 text-green-300",
-};
-
 export default function MPPage({ params }: { params: Promise<{ name: string }> }) {
   const { name } = use(params);
   const [data, setData] = useState<MPRisk | null>(null);
@@ -68,151 +65,146 @@ export default function MPPage({ params }: { params: Promise<{ name: string }> }
   }, [name]);
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center text-lg">
-      Loading MP roll-up data...
+    <div className="min-h-screen bg-background text-foreground-secondary flex items-center justify-center text-lg">
+      <div className="flex flex-col items-center gap-4">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-brand border-r-transparent align-[-0.125em]" role="status" />
+        <p>Loading portfolio data...</p>
+      </div>
     </div>
   );
-  if (error || !data || (data as any).detail) return (
-    <div className="min-h-screen bg-slate-950 text-red-400 flex items-center justify-center text-lg">
-      {error || (data as any)?.detail || "MP Not Found"}
+  
+  if (error || !data || (data && 'detail' in data)) return (
+    <div className="min-h-screen bg-background text-risk-high flex items-center justify-center text-lg font-medium">
+      {error || (data && 'detail' in data ? (data as { detail: string }).detail : "") || "MP Not Found"}
     </div>
   );
-
-  const riskColor = data.risk_level === "HIGH" ? "text-red-400 border-red-600 bg-red-950/30"
-    : data.risk_level === "MEDIUM" ? "text-amber-400 border-amber-600 bg-amber-950/30"
-    : "text-green-400 border-green-600 bg-green-950/30";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
-      <header className="border-b border-slate-800 bg-slate-900 px-8 py-4">
-        <div className="max-w-5xl mx-auto flex items-center gap-4">
-          <Link href="/" className="text-slate-500 hover:text-slate-300 text-sm transition-colors">← Dashboard</Link>
-          <span className="text-slate-700">/</span>
-          <span className="text-slate-300 text-sm">MP Overview</span>
-        </div>
-      </header>
+    <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 w-full">
+      <nav className="mb-6 flex items-center gap-2 text-sm text-foreground-secondary" aria-label="Breadcrumb">
+        <Link href="/" className="hover:text-brand focus:outline-none focus:underline transition-colors">Dashboard</Link>
+        <span>/</span>
+        <span className="text-foreground font-medium" aria-current="page">Portfolio Overview</span>
+      </nav>
 
-      <main className="max-w-5xl mx-auto px-8 py-8">
-        <div className="flex items-start justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-50">{data.mp_name}</h1>
-            <p className="text-slate-400 mt-1">{data.constituency} · {data.state}</p>
-          </div>
-          <div className={`border rounded-xl px-6 py-4 text-center ${riskColor}`}>
-            <div className="text-xs uppercase tracking-widest font-bold mb-1">Aggregated Risk Score</div>
-            <div className="text-5xl font-black">{data.risk_score.toFixed(0)}</div>
-            <div className="text-sm font-semibold mt-1">{data.risk_level}</div>
-          </div>
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">{data.mp_name}</h1>
+          <p className="text-foreground-secondary mt-1 text-lg">{data.constituency} · {data.state}</p>
         </div>
-
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          {[
-            { label: "Allocated Limit", value: fmt(data.allocated_amount), sub: "Total sanctioned limit" },
-            { label: "Total Disbursed", value: fmt(data.total_disbursed), sub: "Amount released" },
-            { label: "Utilization", value: `${data.utilization_pct.toFixed(1)}%`,
-              sub: data.utilization_pct < 30 ? "⚠ Very Low" : "Utilization rate",
-              highlight: data.utilization_pct < 30 },
-            { label: "Total Payments", value: data.transaction_count.toString(), sub: `${data.unique_vendor_count} unique vendors` },
-          ].map((card) => (
-            <div key={card.label} className={`bg-slate-900 border rounded-xl p-4 ${card.highlight ? "border-red-700" : "border-slate-800"}`}>
-              <div className="text-slate-500 text-xs mb-1">{card.label}</div>
-              <div className={`text-2xl font-bold ${card.highlight ? "text-red-400" : "text-slate-100"}`}>{card.value}</div>
-              <div className={`text-xs mt-1 ${card.highlight ? "text-red-500" : "text-slate-600"}`}>{card.sub}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-sm font-semibold text-slate-300">Fund Utilization</span>
-            <span className="text-sm text-slate-400">{fmt(data.total_disbursed)} of {fmt(data.allocated_amount)}</span>
+        <div className="bg-surface border border-border rounded-xl px-6 py-4 text-center shrink-0 shadow-sm min-w-[200px]">
+          <div className="text-xs uppercase tracking-widest font-bold text-foreground-secondary mb-1">Priority Verification Score</div>
+          <div className={`text-5xl font-black mb-2 ${
+            data.risk_level === "HIGH" ? "text-risk-high" :
+            data.risk_level === "MEDIUM" ? "text-risk-medium" : "text-risk-low"
+          }`}>
+            {data.risk_score.toFixed(0)}
           </div>
-          <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${data.utilization_pct < 30 ? "bg-red-500" : data.utilization_pct < 60 ? "bg-amber-500" : "bg-green-500"}`}
-              style={{ width: `${Math.min(data.utilization_pct, 100)}%` }}
-            />
+          <StatusBadge level={data.risk_level} showLabel={true} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <MetricCard label="Allocated Limit" value={fmt(data.allocated_amount)} subtext="Total sanctioned limit" />
+        <MetricCard label="Total Disbursed" value={fmt(data.total_disbursed)} subtext="Amount released" valueClassName="text-brand" />
+        <div className={`bg-surface border rounded-xl p-4 transition-colors ${data.utilization_pct < 30 ? "border-risk-high-border bg-risk-high-bg/30" : "border-border"}`}>
+          <ProgressBar 
+            percentage={data.utilization_pct} 
+            label="Utilization" 
+            subtext={`${data.utilization_pct.toFixed(1)}%`} 
+          />
+          <div className={`text-xs mt-3 ${data.utilization_pct < 30 ? "text-risk-high font-medium" : "text-foreground-secondary"}`}>
+            {data.utilization_pct < 30 ? "⚠ Very Low Utilization" : "Utilization rate"}
           </div>
         </div>
+        <MetricCard label="Total Payments" value={data.transaction_count} subtext={`${data.unique_vendor_count} unique vendors`} />
+      </div>
 
-        {data.explanations.length > 0 && (
-          <div className="mb-6 bg-slate-900 border border-slate-800 rounded-xl p-5">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">
-              MP-Level Flags
+      {data.explanations.length > 0 && (
+        <div className="mb-8 bg-surface border border-border shadow-sm rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border bg-surface-secondary flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-brand"></span>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+              Review Signals ({data.explanations.length})
             </h2>
-            <div className="space-y-3">
-              {data.explanations.map((exp, idx) => (
-                <div key={idx} className={`border-l-4 rounded-r-lg p-4 ${SEV_COLORS[exp.severity] || SEV_COLORS.LOW}`}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider">
-                      {MP_SIGNAL_LABELS[exp.type] || exp.type}
-                    </span>
-                    <span className={`text-xs px-2 py-0.5 rounded font-semibold border ${
-                      exp.severity === "HIGH" ? "border-red-600 text-red-400" : "border-amber-600 text-amber-400"
-                    }`}>
-                      {exp.severity}
-                    </span>
-                  </div>
-                  <p className="text-sm mb-1">{exp.reason}</p>
-                  <p className="text-xs opacity-60">{exp.data}</p>
+          </div>
+          <div className="p-5 space-y-4">
+            {data.explanations.map((exp, idx) => (
+              <div key={idx} className={`border-l-4 rounded-r-lg p-4 bg-surface-secondary ${
+                exp.severity === "HIGH" ? "border-l-risk-high" :
+                exp.severity === "MEDIUM" ? "border-l-risk-medium" : "border-l-risk-low"
+              }`}>
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                  <span className="text-sm font-bold uppercase tracking-wider text-foreground">
+                    {MP_SIGNAL_LABELS[exp.type] || exp.type}
+                  </span>
+                  <StatusBadge level={exp.severity} />
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden mb-8">
-          <div className="px-5 py-4 border-b border-slate-800">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">
-              Scored Works ({data.works.length})
-            </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              Top 50 works for this MP, sorted by individual risk score.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-12 gap-2 px-4 py-2 text-xs font-semibold text-slate-500 border-b border-slate-800 uppercase tracking-wider">
-            <div className="col-span-5">Work ID / Type</div>
-            <div className="col-span-2">District / FY</div>
-            <div className="col-span-2 text-right">Expenditure</div>
-            <div className="col-span-3 text-right">Risk Score</div>
-          </div>
-          
-          {data.works.map((work) => (
-            <Link
-              key={work.work_id}
-              href={`/work/${encodeURIComponent(work.work_id)}`}
-              className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-slate-800/50 hover:bg-slate-800/40 transition-colors cursor-pointer group"
-            >
-              <div className="col-span-5">
-                <div className="font-medium text-slate-100 text-xs font-mono group-hover:text-indigo-400 transition-colors truncate">
-                  {work.work_id}
+                <p className="text-sm text-foreground mb-2 leading-relaxed">{exp.reason}</p>
+                <div className="text-xs text-foreground-secondary font-mono bg-surface border border-border p-2 rounded">
+                  {exp.data}
                 </div>
-                <div className="text-slate-500 text-xs truncate" title={work.work_type}>{work.work_type}</div>
               </div>
-              <div className="col-span-2">
-                <div className="text-slate-300 text-xs truncate">{work.district}</div>
-                <div className="text-slate-500 text-xs truncate">FY {work.fiscal_year || "Unknown"}</div>
-              </div>
-              <div className="col-span-2 self-center text-right text-slate-300 text-sm">
-                {fmt(work.total_expenditure)}
-              </div>
-              <div className="col-span-3 self-center text-right">
-                <span className={`text-xs font-bold px-2 py-0.5 rounded border ${
-                  work.risk_level === "HIGH" ? "bg-red-100 text-red-800 border-red-200" :
-                  work.risk_level === "MEDIUM" ? "bg-amber-100 text-amber-800 border-amber-200" :
-                  "bg-green-100 text-green-800 border-green-200"
-                }`}>
-                  {work.risk_score.toFixed(0)} ({work.risk_level})
-                </span>
-              </div>
-            </Link>
-          ))}
-          {data.works.length === 0 && (
-            <div className="py-8 text-center text-slate-500 text-sm">No expenditure works found for this MP.</div>
-          )}
+            ))}
+          </div>
         </div>
-      </main>
+      )}
+
+      <div className="bg-surface border border-border shadow-sm rounded-xl overflow-hidden mb-8">
+        <div className="px-5 py-4 border-b border-border flex justify-between items-center bg-surface-secondary">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+            Funded Works ({data.works.length})
+          </h2>
+          <p className="text-xs text-foreground-secondary">
+            Top 50 works, sorted by priority score
+          </p>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[700px]">
+            <thead>
+              <tr className="bg-surface border-b border-border text-xs font-semibold text-foreground-secondary uppercase tracking-wider">
+                <th className="px-4 py-3 font-semibold">Work ID / Type</th>
+                <th className="px-4 py-3 font-semibold">District / FY</th>
+                <th className="px-4 py-3 font-semibold text-right">Expenditure</th>
+                <th className="px-4 py-3 font-semibold text-right">Review Score</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {data.works.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-foreground-secondary text-sm">
+                    No expenditure works found for this portfolio.
+                  </td>
+                </tr>
+              ) : (
+                data.works.map((work) => (
+                  <tr key={work.work_id} className="hover:bg-surface-secondary/50 transition-colors group">
+                    <td className="px-4 py-3 align-middle">
+                      <Link href={`/work/${encodeURIComponent(work.work_id)}`} className="block focus:outline-none focus:underline group-hover:text-brand">
+                        <div className="font-medium text-foreground text-sm font-mono transition-colors truncate max-w-[250px]">
+                          {work.work_id}
+                        </div>
+                        <div className="text-foreground-secondary text-xs truncate max-w-[250px]" title={work.work_type}>{work.work_type}</div>
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 align-middle">
+                      <div className="text-foreground text-sm truncate max-w-[150px]">{work.district}</div>
+                      <div className="text-foreground-secondary text-xs truncate max-w-[150px]">FY {work.fiscal_year || "Unknown"}</div>
+                    </td>
+                    <td className="px-4 py-3 align-middle text-right text-foreground text-sm font-mono">
+                      {fmt(work.total_expenditure)}
+                    </td>
+                    <td className="px-4 py-3 align-middle text-right">
+                      <StatusBadge level={work.risk_level} score={work.risk_score} showLabel={true} />
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

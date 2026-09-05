@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
+import StatusBadge from "@/components/StatusBadge";
 
 interface Explanation {
   type: string;
@@ -53,12 +54,6 @@ const SIGNAL_LABELS: Record<string, string> = {
   duplicate: "Duplicate Work",
 };
 
-const SEV_COLORS: Record<string, string> = {
-  HIGH: "border-red-500 bg-red-950/40 text-red-300",
-  MEDIUM: "border-amber-500 bg-amber-950/40 text-amber-300",
-  LOW: "border-green-500 bg-green-950/40 text-green-300",
-};
-
 function fmt(n: number) {
   return `₹${n.toLocaleString("en-IN")}`;
 }
@@ -67,7 +62,7 @@ function formatDate(ds: string | null) {
   if (!ds) return "Unknown";
   try {
     return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(ds));
-  } catch (e) {
+  } catch {
     return ds;
   }
 }
@@ -87,206 +82,212 @@ export default function WorkPage({ params }: { params: Promise<{ id: string }> }
   }, [id]);
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center text-lg">
-      Loading work investigation...
+    <div className="min-h-screen bg-background text-foreground-secondary flex items-center justify-center text-lg">
+      <div className="flex flex-col items-center gap-4">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-brand border-r-transparent align-[-0.125em]" role="status" />
+        <p>Loading work investigation...</p>
+      </div>
     </div>
   );
-  if (error || !data || (data as any).detail) return (
-    <div className="min-h-screen bg-slate-950 text-red-400 flex items-center justify-center text-lg">
-      {error || (data as any)?.detail || "Work Not Found"}
+  if (error || !data || (data && 'detail' in data)) return (
+    <div className="min-h-screen bg-background text-risk-high flex items-center justify-center text-lg font-medium">
+      {error || (data && 'detail' in data ? (data as { detail: string }).detail : "") || "Work Not Found"}
     </div>
   );
-
-  const riskColor = data.risk_level === "HIGH" ? "text-red-400 border-red-600 bg-red-950/30"
-    : data.risk_level === "MEDIUM" ? "text-amber-400 border-amber-600 bg-amber-950/30"
-    : "text-green-400 border-green-600 bg-green-950/30";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
-      <header className="border-b border-slate-800 bg-slate-900 px-8 py-4 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-slate-500 hover:text-slate-300 text-sm transition-colors">← Dashboard</Link>
-            <span className="text-slate-700">/</span>
-            <Link href={`/mp/${encodeURIComponent(data.mp_name)}`} className="text-slate-500 hover:text-indigo-400 text-sm transition-colors">
-              {data.mp_name}
-            </Link>
-            <span className="text-slate-700">/</span>
-            <span className="text-slate-300 text-sm font-mono">{data.work_id}</span>
-          </div>
-          <div className="flex gap-2">
-            <button className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold border border-slate-700 transition-colors">
-              Request Audit
-            </button>
-            <button className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded text-xs font-semibold transition-colors">
-              Mark Resolved
-            </button>
-          </div>
+    <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <nav className="flex items-center gap-2 text-sm text-foreground-secondary" aria-label="Breadcrumb">
+          <Link href="/" className="hover:text-brand focus:outline-none focus:underline transition-colors">Dashboard</Link>
+          <span>/</span>
+          <Link href={`/mp/${encodeURIComponent(data.mp_name)}`} className="hover:text-brand focus:outline-none focus:underline transition-colors truncate max-w-[150px] sm:max-w-none">
+            {data.mp_name}
+          </Link>
+          <span>/</span>
+          <span className="text-foreground font-medium font-mono truncate max-w-[150px] sm:max-w-none" aria-current="page">{data.work_id}</span>
+        </nav>
+        
+        <div className="flex gap-3">
+          <button className="px-4 py-2 bg-surface hover:bg-surface-secondary text-foreground rounded-lg text-sm font-semibold border border-border shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand">
+            Request Audit
+          </button>
+          <button className="px-4 py-2 bg-brand hover:bg-brand-hover text-white rounded-lg text-sm font-semibold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
+            Mark Resolved
+          </button>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-6xl mx-auto px-8 py-8">
-        {/* Hero */}
-        <div className="flex items-start justify-between mb-8">
-          <div className="max-w-3xl">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 text-xs font-mono rounded border border-indigo-500/30">
-                {data.work_id}
-              </span>
-              <span className="text-slate-500 text-sm">FY {data.fiscal_year || "Unknown"}</span>
-            </div>
-            <h1 className="text-2xl font-bold text-slate-50 leading-snug">{data.work_type}</h1>
-            <p className="text-slate-400 mt-2">
-              {data.district}, {data.state} · Implemented by {data.ida}
-            </p>
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+        <div className="max-w-3xl">
+          <div className="flex flex-wrap items-center gap-3 mb-3">
+            <span className="px-2 py-0.5 bg-brand/10 text-brand text-xs font-mono rounded border border-brand/20 font-medium">
+              {data.work_id}
+            </span>
+            <span className="text-foreground-secondary text-sm bg-surface-secondary px-2 py-0.5 rounded border border-border">FY {data.fiscal_year || "Unknown"}</span>
           </div>
-          <div className={`border rounded-xl px-6 py-4 text-center shrink-0 ml-4 ${riskColor}`}>
-            <div className="text-xs uppercase tracking-widest font-bold mb-1">Work Risk Score</div>
-            <div className="text-5xl font-black">{data.risk_score.toFixed(0)}</div>
-            <div className="text-sm font-semibold mt-1">{data.risk_level}</div>
-          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-snug">{data.work_type}</h1>
+          <p className="text-foreground-secondary mt-2 text-lg">
+            {data.district}, {data.state} · Implemented by <span className="font-medium text-foreground">{data.ida}</span>
+          </p>
         </div>
+        <div className="bg-surface border border-border rounded-xl px-6 py-4 text-center shrink-0 shadow-sm min-w-[200px]">
+          <div className="text-xs uppercase tracking-widest font-bold text-foreground-secondary mb-1">Review Score</div>
+          <div className={`text-5xl font-black mb-2 ${
+            data.risk_level === "HIGH" ? "text-risk-high" :
+            data.risk_level === "MEDIUM" ? "text-risk-medium" : "text-risk-low"
+          }`}>
+            {data.risk_score.toFixed(0)}
+          </div>
+          <StatusBadge level={data.risk_level} showLabel={true} />
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {/* Explanations */}
-            {data.explanations.length > 0 && (
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                  Active Risk Flags ({data.explanations.length})
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          {data.explanations.length > 0 && (
+            <div className="bg-surface border border-border shadow-sm rounded-xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-border bg-surface-secondary flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-brand"></span>
+                <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+                  Active Review Flags ({data.explanations.length})
                 </h2>
-                <div className="space-y-3">
-                  {data.explanations.map((exp, idx) => (
-                    <div key={idx} className={`border-l-4 rounded p-4 ${SEV_COLORS[exp.severity] || SEV_COLORS.LOW}`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                          {SIGNAL_LABELS[exp.type] || exp.type}
-                        </span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase border ${
-                          exp.severity === "HIGH" ? "border-red-600/50 text-red-400" : "border-amber-600/50 text-amber-400"
-                        }`}>
-                          {exp.severity}
-                        </span>
-                      </div>
-                      <p className="text-sm text-slate-100 mb-2 leading-relaxed">{exp.reason}</p>
-                      <div className="text-xs text-slate-400 font-mono bg-black/20 p-2 rounded">
-                        {exp.data}
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
-            )}
-
-            {/* Payments Timeline */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-800 flex justify-between items-center">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">
-                  Payment Timeline
-                </h2>
-                <span className="text-xs text-slate-500">{data.payment_count} transactions</span>
-              </div>
-              <div className="p-0">
-                <div className="grid grid-cols-12 gap-2 px-5 py-2 text-xs font-semibold text-slate-500 border-b border-slate-800/50 bg-slate-900/50">
-                  <div className="col-span-3">Date</div>
-                  <div className="col-span-5">Vendor</div>
-                  <div className="col-span-2">Status</div>
-                  <div className="col-span-2 text-right">Amount</div>
-                </div>
-                {data.payments.map((p, i) => (
-                  <div key={i} className="grid grid-cols-12 gap-2 px-5 py-3 border-b border-slate-800/30 text-sm hover:bg-slate-800/20">
-                    <div className="col-span-3 text-slate-400">{formatDate(p.date)}</div>
-                    <div className="col-span-5 text-slate-200 truncate" title={p.vendor}>{p.vendor}</div>
-                    <div className="col-span-2">
-                      <span className="text-[10px] uppercase px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded">
-                        {p.status}
+              <div className="p-5 space-y-4">
+                {data.explanations.map((exp, idx) => (
+                  <div key={idx} className={`border-l-4 rounded-r-lg p-4 bg-surface-secondary ${
+                    exp.severity === "HIGH" ? "border-l-risk-high" :
+                    exp.severity === "MEDIUM" ? "border-l-risk-medium" : "border-l-risk-low"
+                  }`}>
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                      <span className="text-sm font-bold uppercase tracking-wider text-foreground">
+                        {SIGNAL_LABELS[exp.type] || exp.type}
                       </span>
+                      <StatusBadge level={exp.severity} />
                     </div>
-                    <div className="col-span-2 text-right font-mono text-slate-300">
-                      {fmt(p.amount)}
+                    <p className="text-sm text-foreground mb-3 leading-relaxed">{exp.reason}</p>
+                    <div className="text-xs text-foreground-secondary font-mono bg-surface border border-border p-3 rounded">
+                      {exp.data}
                     </div>
-                  </div>
-                ))}
-                {data.payments.length === 0 && (
-                  <div className="p-5 text-center text-slate-500 text-sm">No payment records found.</div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-1 space-y-6">
-            {/* Financial Summary */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Financials</h2>
-              <div className="mb-4">
-                <div className="text-xs text-slate-500 mb-1">Total Expenditure</div>
-                <div className="text-2xl font-bold text-slate-100">{fmt(data.total_expenditure)}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs text-slate-500 mb-1">Vendors</div>
-                  <div className="text-lg font-semibold text-slate-200">{data.unique_vendors}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-slate-500 mb-1">Payments</div>
-                  <div className="text-lg font-semibold text-slate-200">{data.payment_count}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Peer Comparison */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Peer Comparison</h2>
-              <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                Compared against {data.peer_comparison.peer_count} similar works in {data.state}.
-              </p>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-300">This Work</span>
-                    <span className="font-mono">{fmt(data.total_expenditure)}</span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-800 rounded-full">
-                    <div className={`h-full rounded-full ${data.peer_comparison.ratio && data.peer_comparison.ratio > 1.5 ? 'bg-red-500' : 'bg-indigo-500'}`} style={{ width: '100%' }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-400">Peer Median</span>
-                    <span className="font-mono text-slate-400">{fmt(data.peer_comparison.peer_avg_expenditure)}</span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-800 rounded-full">
-                    <div className="h-full bg-slate-600 rounded-full" style={{ width: `${Math.min(100, (data.peer_comparison.peer_avg_expenditure / Math.max(data.total_expenditure, 1)) * 100)}%` }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Signal Fingerprint */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Signal Fingerprint</h2>
-              <div className="space-y-3">
-                {Object.entries(data.signals).map(([key, val]) => (
-                  <div key={key} className="flex items-center gap-3">
-                    <div className="w-24 text-xs text-slate-400 shrink-0 truncate" title={SIGNAL_LABELS[key] || key}>
-                      {SIGNAL_LABELS[key] || key}
-                    </div>
-                    <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${val > 20 ? "bg-red-500" : val > 10 ? "bg-amber-500" : val > 0 ? "bg-indigo-500" : "bg-slate-700"}`}
-                        style={{ width: `${Math.min(val * 3.33, 100)}%` }} // max theoretical component score ~30
-                      />
-                    </div>
-                    <div className="w-6 text-right text-xs font-mono text-slate-500">{val.toFixed(0)}</div>
                   </div>
                 ))}
               </div>
             </div>
+          )}
 
+          <div className="bg-surface border border-border shadow-sm rounded-xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-border bg-surface-secondary flex justify-between items-center">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+                Payment Timeline
+              </h2>
+              <span className="text-xs text-foreground-secondary font-medium bg-surface px-2 py-1 rounded border border-border">{data.payment_count} transactions</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[500px]">
+                <thead>
+                  <tr className="bg-surface border-b border-border text-xs font-semibold text-foreground-secondary uppercase tracking-wider">
+                    <th className="px-5 py-3 font-semibold">Date</th>
+                    <th className="px-5 py-3 font-semibold">Vendor</th>
+                    <th className="px-5 py-3 font-semibold">Status</th>
+                    <th className="px-5 py-3 font-semibold text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {data.payments.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="p-8 text-center text-foreground-secondary text-sm">
+                        No payment records found.
+                      </td>
+                    </tr>
+                  ) : (
+                    data.payments.map((p, i) => (
+                      <tr key={i} className="hover:bg-surface-secondary/50 transition-colors">
+                        <td className="px-5 py-3 text-foreground-secondary text-sm whitespace-nowrap">{formatDate(p.date)}</td>
+                        <td className="px-5 py-3 text-foreground font-medium text-sm truncate max-w-[200px]" title={p.vendor}>{p.vendor}</td>
+                        <td className="px-5 py-3">
+                          <span className="text-[10px] uppercase px-2 py-1 bg-surface-secondary border border-border text-foreground-secondary rounded font-bold">
+                            {p.status}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3 text-right font-mono text-foreground font-medium">
+                          {fmt(p.amount)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </main>
+
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-surface border border-border shadow-sm rounded-xl p-5">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground mb-5">Financials</h2>
+            <div className="mb-6">
+              <div className="text-xs text-foreground-secondary mb-1 font-medium">Total Expenditure</div>
+              <div className="text-3xl font-bold text-foreground font-mono tracking-tight">{fmt(data.total_expenditure)}</div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
+              <div>
+                <div className="text-xs text-foreground-secondary mb-1 font-medium">Vendors</div>
+                <div className="text-xl font-semibold text-foreground">{data.unique_vendors}</div>
+              </div>
+              <div>
+                <div className="text-xs text-foreground-secondary mb-1 font-medium">Payments</div>
+                <div className="text-xl font-semibold text-foreground">{data.payment_count}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-surface border border-border shadow-sm rounded-xl p-5">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground mb-4">Peer Comparison</h2>
+            <p className="text-sm text-foreground-secondary mb-6 leading-relaxed">
+              Compared against <strong className="text-foreground font-semibold">{data.peer_comparison.peer_count}</strong> similar works in {data.state}.
+            </p>
+            <div className="space-y-5">
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-foreground font-medium">This Work</span>
+                  <span className="font-mono font-medium">{fmt(data.total_expenditure)}</span>
+                </div>
+                <div className="w-full h-2.5 bg-surface-secondary border border-border rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full ${data.peer_comparison.ratio && data.peer_comparison.ratio > 1.5 ? 'bg-risk-high' : 'bg-brand'}`} style={{ width: '100%' }}></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-foreground-secondary font-medium">Peer Median</span>
+                  <span className="font-mono text-foreground-secondary">{fmt(data.peer_comparison.peer_avg_expenditure)}</span>
+                </div>
+                <div className="w-full h-2.5 bg-surface-secondary border border-border rounded-full overflow-hidden">
+                  <div className="h-full bg-border rounded-full" style={{ width: `${Math.min(100, (data.peer_comparison.peer_avg_expenditure / Math.max(data.total_expenditure, 1)) * 100)}%` }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-surface border border-border shadow-sm rounded-xl p-5">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground mb-5">Signal Fingerprint</h2>
+            <div className="space-y-4">
+              {Object.entries(data.signals).map(([key, val]) => (
+                <div key={key} className="flex items-center gap-3">
+                  <div className="w-32 text-xs font-medium text-foreground-secondary shrink-0 truncate" title={SIGNAL_LABELS[key] || key}>
+                    {SIGNAL_LABELS[key] || key}
+                  </div>
+                  <div className="flex-1 h-2 bg-surface-secondary border border-border rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${val > 20 ? "bg-risk-high" : val > 10 ? "bg-risk-medium" : val > 0 ? "bg-risk-low" : "bg-border"}`}
+                      style={{ width: `${Math.min(val * 3.33, 100)}%` }} 
+                    />
+                  </div>
+                  <div className="w-8 text-right text-xs font-mono font-semibold text-foreground">{val.toFixed(0)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -47,6 +47,31 @@ def get_stats(db: Session = Depends(get_db)):
         "total_disbursed": totals[0] or 0,
         "total_allocated": totals[1] or 0,
     }
+
+
+@app.get("/api/v1/states")
+def get_state_stats(db: Session = Depends(get_db)):
+    from sqlalchemy import case
+    results = db.query(
+        Work.state,
+        func.count(Work.work_id).label("total_works"),
+        func.sum(case((WorkRiskScore.risk_level == "HIGH", 1), else_=0)).label("high_risk_works"),
+        func.sum(case((WorkRiskScore.risk_level == "MEDIUM", 1), else_=0)).label("medium_risk_works"),
+        func.sum(case((WorkRiskScore.risk_level == "LOW", 1), else_=0)).label("low_risk_works"),
+        func.sum(Work.total_expenditure).label("total_expenditure")
+    ).join(WorkRiskScore, Work.work_id == WorkRiskScore.work_id).group_by(Work.state).all()
+
+    return [
+        {
+            "state": r[0],
+            "total_works": r[1],
+            "high_risk_works": r[2] or 0,
+            "medium_risk_works": r[3] or 0,
+            "low_risk_works": r[4] or 0,
+            "total_expenditure": r[5] or 0,
+        }
+        for r in results if r[0]
+    ]
 
 
 # ---------- Works ----------

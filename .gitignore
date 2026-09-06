@@ -1,4 +1,4 @@
-﻿venv/
+venv/
 __pycache__/
 node_modules/
 *.db
@@ -7,3 +7,4 @@ node_modules/
 allocated.csv
 exp.csv
 scratch/
+tmp/

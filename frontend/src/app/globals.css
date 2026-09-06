@@ -1,16 +1,19 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-secondary: var(--surface-secondary);
-  --color-foreground: var(--foreground);
-  --color-foreground-secondary: var(--foreground-secondary);
-  --color-border: var(--border-color);
+  --color-background: var(--bg);
+  --color-surface: var(--bg-card);
+  --color-surface-secondary: var(--input-bg);
+  --color-foreground: var(--text);
+  --color-foreground-secondary: var(--text-secondary);
+  --color-border: var(--border);
   
-  --color-brand: var(--brand);
-  --color-brand-hover: var(--brand-hover);
+  --color-brand: var(--primary);
+  --color-brand-hover: var(--primary-hover);
   
+  --color-table-hover: var(--table-hover);
+  
+  /* Risk colors mapped to tailwind semantic equivalents */
   --color-risk-high: var(--risk-high);
   --color-risk-high-bg: var(--risk-high-bg);
   --color-risk-high-border: var(--risk-high-border);
@@ -23,67 +26,68 @@
   --color-risk-low-bg: var(--risk-low-bg);
   --color-risk-low-border: var(--risk-low-border);
 
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'Inter', var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 :root {
-  /* Light institutional theme by default */
-  --background: #f8fafc; /* slate-50 */
-  --surface: #ffffff;
-  --surface-secondary: #f1f5f9; /* slate-100 */
-  
-  --foreground: #0f172a; /* slate-900 */
-  --foreground-secondary: #475569; /* slate-600 */
-  --border-color: #e2e8f0; /* slate-200 */
-  
-  --brand: #1e3a8a; /* blue-900 - Government blue */
-  --brand-hover: #1e40af; /* blue-800 */
+  /* New Dashboard Theme */
+  --bg: #f5f0eb;
+  --bg-card: #ffffff;
+  --text: #1e1a16;
+  --text-secondary: #7a6a5a;
+  --border: #e0d6cc;
+  --primary: #7a1f1f;
+  --primary-hover: #8a2a2a;
+  --shadow: rgba(90, 50, 30, 0.08);
+  --input-bg: #f5f0eb;
+  --table-hover: #f5f0eb;
   
   /* Risk colors mapped to tailwind semantic equivalents */
-  --risk-high: #b91c1c; /* red-700 */
-  --risk-high-bg: #fef2f2; /* red-50 */
-  --risk-high-border: #fca5a5; /* red-300 */
+  --risk-high: #b91c1c; 
+  --risk-high-bg: #fef2f2; 
+  --risk-high-border: #fca5a5; 
   
-  --risk-medium: #b45309; /* amber-700 */
-  --risk-medium-bg: #fffbeb; /* amber-50 */
-  --risk-medium-border: #fcd34d; /* amber-300 */
+  --risk-medium: #b45309; 
+  --risk-medium-bg: #fffbeb; 
+  --risk-medium-border: #fcd34d; 
   
-  --risk-low: #15803d; /* green-700 */
-  --risk-low-bg: #f0fdf4; /* green-50 */
-  --risk-low-border: #86efac; /* green-300 */
+  --risk-low: #15803d; 
+  --risk-low-bg: #f0fdf4; 
+  --risk-low-border: #86efac; 
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #020617; /* slate-950 */
-    --surface: #0f172a; /* slate-900 */
-    --surface-secondary: #1e293b; /* slate-800 */
+    --bg: #1a1410;
+    --bg-card: #2a221c;
+    --text: #f0e8de;
+    --text-secondary: #a68b78;
+    --border: #3d322a;
+    --primary: #9a3a3a;
+    --primary-hover: #aa4a4a;
+    --shadow: rgba(0,0,0,0.3);
+    --input-bg: #3d322a;
+    --table-hover: #3d322a;
     
-    --foreground: #f8fafc; /* slate-50 */
-    --foreground-secondary: #94a3b8; /* slate-400 */
-    --border-color: #334155; /* slate-700 */
+    --risk-high: #fca5a5; 
+    --risk-high-bg: #450a0a; 
+    --risk-high-border: #991b1b; 
     
-    --brand: #3b82f6; /* blue-500 */
-    --brand-hover: #60a5fa; /* blue-400 */
+    --risk-medium: #fcd34d; 
+    --risk-medium-bg: #451a03; 
+    --risk-medium-border: #92400e; 
     
-    --risk-high: #fca5a5; /* red-300 */
-    --risk-high-bg: #450a0a; /* red-950 */
-    --risk-high-border: #991b1b; /* red-800 */
-    
-    --risk-medium: #fcd34d; /* amber-300 */
-    --risk-medium-bg: #451a03; /* amber-950 */
-    --risk-medium-border: #92400e; /* amber-800 */
-    
-    --risk-low: #86efac; /* green-300 */
-    --risk-low-bg: #052e16; /* green-950 */
-    --risk-low-border: #166534; /* green-800 */
+    --risk-low: #86efac; 
+    --risk-low-bg: #052e16; 
+    --risk-low-border: #166534; 
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   @apply antialiased;
+  transition: background 0.3s, color 0.3s;
 }

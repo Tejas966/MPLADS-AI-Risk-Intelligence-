@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
+import TopHeader from "@/components/TopHeader";
+import Sidebar from "@/components/Sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MPLADS AI Risk Intelligence",
-  description: "AI-powered risk intelligence platform for MPLADS monitoring.",
+  title: "MPLADS AI Risk Intelligence · Team Vanguard",
+  description: "AI-powered risk intelligence platform for MPLADS monitoring by Team Vanguard.",
 };
 
 export default function RootLayout({
@@ -28,11 +29,17 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <Header />
-        <main id="main-content" className="flex-1 flex flex-col">
-          {children}
-        </main>
+        <TopHeader />
+        <div className="flex flex-1 min-h-[calc(100vh-68px)]">
+          <Sidebar />
+          <main id="main-content" className="flex-1 flex flex-col p-6 md:p-8 overflow-x-hidden">
+            {children}
+          </main>
+        </div>
       </body>
     </html>
   );

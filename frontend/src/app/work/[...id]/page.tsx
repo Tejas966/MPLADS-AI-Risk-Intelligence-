@@ -67,15 +67,18 @@ function formatDate(ds: string | null) {
   }
 }
 
-export default function WorkPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function WorkPage({ params }: { params: Promise<{ id: string | string[] }> }) {
+  const resolvedParams = use(params);
+  const rawId = resolvedParams.id;
+  const id = Array.isArray(rawId) ? rawId.join('/') : rawId;
   const [data, setData] = useState<WorkRisk | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!id) return;
-    fetch(`${API_BASE}/api/v1/works/${encodeURIComponent(decodeURIComponent(id))}/risk`)
+    const cleanId = decodeURIComponent(id);
+    fetch(`${API_BASE}/api/v1/works/${encodeURIComponent(cleanId)}/risk`)
       .then((r) => r.json())
       .then((d) => { setData(d); setLoading(false); })
       .catch(() => { setError("Failed to load"); setLoading(false); });

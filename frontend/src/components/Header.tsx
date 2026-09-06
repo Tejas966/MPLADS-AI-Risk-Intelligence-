@@ -22,6 +22,8 @@ export default function Header() {
             </p>
           </div>
           <div className="text-xs text-foreground-secondary border border-border px-3 py-1.5 rounded-lg flex items-center gap-3 bg-surface-secondary w-fit">
+            <span className="font-medium text-foreground">Team Vanguard</span>
+            <div className="h-4 w-px bg-border hidden sm:block"></div>
             <span>SIH 2026 · Problem SIH26102</span>
             <div className="h-4 w-px bg-border hidden sm:block"></div>
             <span className="hidden sm:inline">Role: Ministry Admin</span>

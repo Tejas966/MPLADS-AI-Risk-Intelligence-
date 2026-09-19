@@ -3,6 +3,7 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
 import StatusBadge from "@/components/StatusBadge";
+import RiskMeter from "@/components/RiskMeter";
 
 interface Explanation {
   type: string;
@@ -134,15 +135,18 @@ export default function WorkPage({ params }: { params: Promise<{ id: string | st
             {data.district}, {data.state} · Implemented by <span className="font-medium text-foreground">{data.ida}</span>
           </p>
         </div>
-        <div className="bg-surface border border-border rounded-xl px-6 py-4 text-center shrink-0 shadow-sm min-w-[200px]">
-          <div className="text-xs uppercase tracking-widest font-bold text-foreground-secondary mb-1">Review Score</div>
-          <div className={`text-5xl font-black mb-2 ${
-            data.risk_level === "HIGH" ? "text-risk-high" :
-            data.risk_level === "MEDIUM" ? "text-risk-medium" : "text-risk-low"
-          }`}>
-            {data.risk_score.toFixed(0)}
-          </div>
-          <StatusBadge level={data.risk_level} showLabel={true} />
+        <div className="shrink-0 w-full md:w-[290px]">
+          <RiskMeter
+            score={data.risk_score}
+            riskLevel={data.risk_level}
+            title="Forensic Priority Meter"
+            signals={data.signals}
+            explanations={data.explanations}
+            peerComparison={data.peer_comparison}
+            uniqueVendors={data.unique_vendors}
+            showFactors={false}
+            size="sm"
+          />
         </div>
       </div>
 

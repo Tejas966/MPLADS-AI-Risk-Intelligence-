@@ -27,6 +27,7 @@ interface MPRisk {
   mp_name: string;
   constituency: string;
   state: string;
+  house?: string;
   allocated_amount: number;
   total_disbursed: number;
   utilization_pct: number;
@@ -84,12 +85,25 @@ export default function MPPage({ params }: { params: Promise<{ name: string }> }
       <nav className="mb-6 flex items-center gap-2 text-sm text-foreground-secondary" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-brand focus:outline-none focus:underline transition-colors">Dashboard</Link>
         <span>/</span>
-        <span className="text-foreground font-medium" aria-current="page">Portfolio Overview</span>
+        <Link href="/mp" className="hover:text-brand focus:outline-none focus:underline transition-colors">MP Portfolios</Link>
+        <span>/</span>
+        <span className="text-foreground font-medium" aria-current="page">{data.mp_name}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">{data.mp_name}</h1>
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <h1 className="text-3xl font-bold text-foreground">{data.mp_name}</h1>
+            {data.house === 'RAJYA_SABHA' ? (
+              <span className="bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-xs font-bold px-2.5 py-1 rounded-full border border-purple-300 dark:border-purple-800 flex items-center gap-1">
+                <span>📜</span> Rajya Sabha (Upper House)
+              </span>
+            ) : (
+              <span className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 text-xs font-bold px-2.5 py-1 rounded-full border border-blue-300 dark:border-blue-800 flex items-center gap-1">
+                <span>🗳️</span> Lok Sabha (Lower House)
+              </span>
+            )}
+          </div>
           <p className="text-foreground-secondary mt-1 text-lg">{data.constituency} · {data.state}</p>
         </div>
         <div className="bg-surface border border-border rounded-xl px-6 py-4 text-center shrink-0 shadow-sm min-w-[200px]">

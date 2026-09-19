@@ -22,9 +22,9 @@ interface WorkItem {
   risk_level: string;
 }
 
-export default function ProjectsPage() {
+function ProjectsPageContent() {
   const searchParams = useSearchParams();
-  const initialState = searchParams.get('state') || '';
+  const initialState = searchParams.get('state') || searchParams.get('search') || '';
 
   const [works, setWorks] = useState<WorkItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -343,5 +343,19 @@ export default function ProjectsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProjectsPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="w-full max-w-[1400px] mx-auto p-12 text-center text-foreground-secondary text-sm">
+          <i className="fas fa-spinner fa-spin text-brand text-xl mr-2" /> Loading Projects Explorer...
+        </div>
+      }
+    >
+      <ProjectsPageContent />
+    </React.Suspense>
   );
 }

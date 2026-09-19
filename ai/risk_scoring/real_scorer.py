@@ -7,6 +7,7 @@ class MPRiskScore(Base):
     mp_name = Column(String, index=True)
     state = Column(String)
     constituency = Column(String)
+    house = Column(String, default="LOK_SABHA", index=True)
     risk_level = Column(String)
     total_disbursed = Column(Float, default=0)
     allocated_amount = Column(Float, default=0)

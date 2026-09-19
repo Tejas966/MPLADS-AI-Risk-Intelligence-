@@ -1,4 +1,4 @@
-﻿from sqlalchemy import Column, String, Float, Integer, Text, DateTime, ForeignKey
+from sqlalchemy import Column, String, Float, Integer, Text, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from backend.app.database import Base
 from datetime import datetime
@@ -22,6 +22,7 @@ class Work(Base):
     first_payment_date = Column(DateTime, nullable=True)
     last_payment_date = Column(DateTime, nullable=True)
     latest_payment_status = Column(String, default="Unknown")
+    house = Column(String, default="LOK_SABHA", index=True)
 
     payments = relationship("WorkPayment", back_populates="work", cascade="all, delete-orphan")
     risk_score = relationship("WorkRiskScore", back_populates="work", uselist=False, cascade="all, delete-orphan")

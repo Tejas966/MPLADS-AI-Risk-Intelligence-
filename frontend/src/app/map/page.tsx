@@ -2,12 +2,22 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import IndiaMap, { StateRiskData } from '@/components/IndiaMap';
+import LiveIndiaMap from '@/components/LiveIndiaMap';
 import { API_BASE } from '@/lib/config';
+
+export interface StateRiskData {
+  state: string;
+  total_works: number;
+  high_risk_works: number;
+  medium_risk_works: number;
+  low_risk_works: number;
+  total_expenditure: number;
+}
 
 export default function MapPage() {
   const [states, setStates] = useState<StateRiskData[]>([]);
   const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +53,7 @@ export default function MapPage() {
             Geographic Risk Intelligence · India
           </h1>
           <p className="text-xs text-foreground-secondary mt-1">
-            Real-time geospatial risk clustering across all 36 States and Union Territories
+            Live administrative boundary geospatial risk intelligence with state and district drill-down
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -98,7 +108,7 @@ export default function MapPage() {
           </div>
           <div>
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-semibold">
-              Low Risk Works
+              Standard Works
             </div>
             <div className="text-2xl font-bold text-[#2d6a2d] font-mono">
               {totalLowRisk.toLocaleString()}
@@ -107,31 +117,34 @@ export default function MapPage() {
         </div>
 
         <div className="bg-surface rounded-2xl p-4 border border-border flex items-center gap-3.5 shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-base">
+          <div className="w-10 h-10 rounded-xl bg-purple-100 text-[#7c3aed] flex items-center justify-center font-bold text-base">
             <i className="fas fa-coins" />
           </div>
           <div>
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-semibold">
               Total Outlay
             </div>
-            <div className="text-2xl font-bold text-purple-800 font-mono">
+            <div className="text-xl font-bold text-[#7c3aed] font-mono">
               ₹{(totalExpenditure / 10000000).toFixed(1)} Cr
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Map & State Breakdown Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6">
-        {/* Left: Map Container */}
-        <div className="bg-surface rounded-2xl p-5 border border-border shadow-sm flex flex-col">
+      {/* Main Content: Map + State Table */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left: Interactive Map Container */}
+        <div className="lg:col-span-7 bg-surface rounded-2xl p-5 border border-border shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-base font-bold text-foreground flex items-center gap-2">
               <i className="fas fa-globe-asia text-brand"></i> Vector Choropleth Map
             </h2>
-            {selectedState && (
+            {(selectedState || selectedDistrict) && (
               <button
-                onClick={() => setSelectedState(null)}
+                onClick={() => {
+                  setSelectedState(null);
+                  setSelectedDistrict(null);
+                }}
                 className="text-xs text-stone-500 hover:text-stone-800 bg-stone-100 px-2.5 py-1 rounded-md"
               >
                 Reset Map
@@ -139,15 +152,20 @@ export default function MapPage() {
             )}
           </div>
           <div className="bg-stone-50/50 rounded-xl border border-stone-200/80 p-3 flex-1 flex items-center justify-center">
-            <IndiaMap
+            <LiveIndiaMap
               selectedState={selectedState}
-              onSelectState={(name) => setSelectedState(name)}
+              selectedDistrict={selectedDistrict}
+              onSelectState={(name) => {
+                setSelectedState(name);
+                setSelectedDistrict(null);
+              }}
+              onSelectDistrict={(name) => setSelectedDistrict(name)}
             />
           </div>
         </div>
 
         {/* Right: State Analytics Table */}
-        <div className="bg-surface rounded-2xl p-5 border border-border shadow-sm flex flex-col">
+        <div className="lg:col-span-5 bg-surface rounded-2xl p-5 border border-border shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-base font-bold text-foreground flex items-center gap-2">
               <i className="fas fa-table text-brand"></i> State Risk Breakdown

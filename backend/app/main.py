@@ -26,40 +26,65 @@ app.add_middleware(
 
 # ---------- Stats ----------
 @app.get("/api/v1/stats")
-def get_stats(db: Session = Depends(get_db)):
-    total_works = db.query(Work).count()
-    high_works = db.query(WorkRiskScore).filter(WorkRiskScore.risk_level == "HIGH").count()
-    med_works = db.query(WorkRiskScore).filter(WorkRiskScore.risk_level == "MEDIUM").count()
-    low_works = db.query(WorkRiskScore).filter(WorkRiskScore.risk_level == "LOW").count()
-    total_mps = db.query(MPRiskScore).count()
-    high_mps = db.query(MPRiskScore).filter(MPRiskScore.risk_level == "HIGH").count()
-    totals = db.query(
+def get_stats(house: str = None, db: Session = Depends(get_db)):
+    # Base queries
+    work_q = db.query(Work)
+    work_risk_q = db.query(WorkRiskScore).join(Work, Work.work_id == WorkRiskScore.work_id)
+    mp_q = db.query(MPRiskScore)
+
+    if house and house.upper() in ["LOK_SABHA", "RAJYA_SABHA"]:
+        h = house.upper()
+        work_q = work_q.filter(Work.house == h)
+        work_risk_q = work_risk_q.filter(Work.house == h)
+        mp_q = mp_q.filter(MPRiskScore.house == h)
+
+    total_works = work_q.count()
+    high_works = work_risk_q.filter(WorkRiskScore.risk_level == "HIGH").count()
+    med_works = work_risk_q.filter(WorkRiskScore.risk_level == "MEDIUM").count()
+    low_works = work_risk_q.filter(WorkRiskScore.risk_level == "LOW").count()
+
+    total_mps = mp_q.count()
+    high_mps = mp_q.filter(MPRiskScore.risk_level == "HIGH").count()
+    
+    totals = mp_q.with_entities(
         func.sum(MPRiskScore.total_disbursed),
         func.sum(MPRiskScore.allocated_amount),
     ).first()
+
+    lok_sabha_mps = db.query(MPRiskScore).filter(MPRiskScore.house == "LOK_SABHA").count()
+    rajya_sabha_mps = db.query(MPRiskScore).filter(MPRiskScore.house == "RAJYA_SABHA").count()
+
     return {
+        "house": house.upper() if house else "ALL",
         "total_works": total_works,
         "high_risk_works": high_works,
         "medium_risk_works": med_works,
         "low_risk_works": low_works,
         "total_mps": total_mps,
         "high_risk_mps": high_mps,
+        "lok_sabha_mps": lok_sabha_mps,
+        "rajya_sabha_mps": rajya_sabha_mps,
         "total_disbursed": totals[0] or 0,
         "total_allocated": totals[1] or 0,
     }
 
 
 @app.get("/api/v1/states")
-def get_state_stats(db: Session = Depends(get_db)):
+def get_state_stats(house: str = None, db: Session = Depends(get_db)):
     from sqlalchemy import case
-    results = db.query(
+    q = db.query(
         Work.state,
         func.count(Work.work_id).label("total_works"),
         func.sum(case((WorkRiskScore.risk_level == "HIGH", 1), else_=0)).label("high_risk_works"),
         func.sum(case((WorkRiskScore.risk_level == "MEDIUM", 1), else_=0)).label("medium_risk_works"),
         func.sum(case((WorkRiskScore.risk_level == "LOW", 1), else_=0)).label("low_risk_works"),
         func.sum(Work.total_expenditure).label("total_expenditure")
-    ).join(WorkRiskScore, Work.work_id == WorkRiskScore.work_id).group_by(Work.state).all()
+    ).join(WorkRiskScore, Work.work_id == WorkRiskScore.work_id)
+
+    if house and house.upper() in ["LOK_SABHA", "RAJYA_SABHA"]:
+        q = q.filter(Work.house == house.upper())
+
+    results = q.group_by(Work.state).all()
 
     return [
         {
@@ -74,6 +99,43 @@ def get_state_stats(db: Session = Depends(get_db)):
     ]
 
 
+@app.get("/api/v1/states/{state}/districts")
+@app.get("/api/v1/districts")
+def get_district_stats(state: str = None, house: str = None, db: Session = Depends(get_db)):
+    from sqlalchemy import case
+    q = db.query(
+        Work.state,
+        Work.district,
+        func.count(Work.work_id).label("total_works"),
+        func.sum(case((WorkRiskScore.risk_level == "HIGH", 1), else_=0)).label("high_risk_works"),
+        func.sum(case((WorkRiskScore.risk_level == "MEDIUM", 1), else_=0)).label("medium_risk_works"),
+        func.sum(case((WorkRiskScore.risk_level == "LOW", 1), else_=0)).label("low_risk_works"),
+        func.avg(WorkRiskScore.overall_score).label("avg_risk_score"),
+        func.sum(Work.total_expenditure).label("total_expenditure")
+    ).join(WorkRiskScore, Work.work_id == WorkRiskScore.work_id)
+
+    if state:
+        q = q.filter(Work.state.ilike(f"%{state}%"))
+    if house and house.upper() in ["LOK_SABHA", "RAJYA_SABHA"]:
+        q = q.filter(Work.house == house.upper())
+
+    results = q.group_by(Work.state, Work.district).all()
+
+    return [
+        {
+            "state": r[0],
+            "district": r[1] or "Unknown",
+            "total_works": r[2],
+            "high_risk_works": r[3] or 0,
+            "medium_risk_works": r[4] or 0,
+            "low_risk_works": r[5] or 0,
+            "avg_risk_score": round(float(r[6] or 0), 1),
+            "total_expenditure": r[7] or 0,
+        }
+        for r in results if r[1]
+    ]
+
+
 # ---------- Works ----------
 @app.get("/api/v1/works")
 def list_works(
@@ -81,11 +143,14 @@ def list_works(
     state: str = None,
     work_type: str = None,
     mp_name: str = None,
+    house: str = None,
     search: str = None,
     limit: int = Query(default=200, le=500),
     db: Session = Depends(get_db),
 ):
     q = db.query(Work).join(WorkRiskScore)
+    if house and house.upper() in ["LOK_SABHA", "RAJYA_SABHA"]:
+        q = q.filter(Work.house == house.upper())
     if risk_level:
         q = q.filter(WorkRiskScore.risk_level == risk_level.upper())
     if state:
@@ -107,6 +172,7 @@ def list_works(
             {
                 "work_id": w.work_id,
                 "work_type": w.work_type,
+                "house": w.house,
                 "state": w.state,
                 "district": w.district,
                 "mp_name": w.mp_name,
@@ -150,6 +216,7 @@ def get_work_risk(work_id: str, db: Session = Depends(get_db)):
     return {
         "work_id": work.work_id,
         "work_type": work.work_type,
+        "house": work.house,
         "state": work.state,
         "district": work.district,
         "mp_name": work.mp_name,
@@ -198,11 +265,14 @@ def get_work_risk(work_id: str, db: Session = Depends(get_db)):
 def list_mps(
     risk_level: str = None,
     state: str = None,
+    house: str = None,
     search: str = None,
-    limit: int = Query(default=200, le=600),
+    limit: int = Query(default=200, le=800),
     db: Session = Depends(get_db),
 ):
     q = db.query(MPRiskScore)
+    if house and house.upper() in ["LOK_SABHA", "RAJYA_SABHA"]:
+        q = q.filter(MPRiskScore.house == house.upper())
     if risk_level:
         q = q.filter(MPRiskScore.risk_level == risk_level.upper())
     if state:
@@ -220,6 +290,7 @@ def list_mps(
                 "mp_name": r.mp_name,
                 "constituency": r.constituency,
                 "state": r.state,
+                "house": r.house,
                 "allocated_amount": r.allocated_amount,
                 "total_disbursed": r.total_disbursed,
                 "utilization_pct": r.utilization_pct,
@@ -252,6 +323,7 @@ def get_mp_risk(mp_name: str, db: Session = Depends(get_db)):
         "mp_name": record.mp_name,
         "constituency": record.constituency,
         "state": record.state,
+        "house": record.house,
         "allocated_amount": record.allocated_amount,
         "total_disbursed": record.total_disbursed,
         "utilization_pct": record.utilization_pct,

@@ -2,16 +2,39 @@
 "use client";
 import { useEffect, useState, use } from 'react';
 
+interface ExplanationItem {
+  type: string;
+  severity: string;
+  reason: string;
+}
+
+interface ProjectRiskData {
+  project_id?: string;
+  description?: string;
+  district?: string;
+  state?: string;
+  mp_name?: string;
+  risk_score?: number | string;
+  risk_level?: string;
+  signals?: Record<string, number>;
+  explanations?: ExplanationItem[];
+  recommendation?: string;
+  sanctioned_amount?: number | string;
+  expenditure?: number | string;
+  physical_progress?: number | string;
+  detail?: string;
+}
+
 export default function ProjectRiskPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [data, setData] = useState<ProjectRiskData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!resolvedParams.id) return;
     fetch(`http://127.0.0.1:8000/api/v1/projects/${resolvedParams.id}/risk`)
       .then(res => res.json())
-      .then(resData => {
+      .then((resData: ProjectRiskData) => {
         setData(resData);
         setLoading(false);
       })
@@ -22,7 +45,7 @@ export default function ProjectRiskPage({ params }: { params: Promise<{ id: stri
   }, [resolvedParams.id]);
 
   if (loading) return <div className="p-8 text-center">Loading Risk Fingerprint...</div>;
-  if (!data || 'detail' in data) return <div className="p-8 text-center text-red-500">{data && 'detail' in data ? String(data.detail) : "Project Not Found"}</div>;
+  if (!data || data.detail) return <div className="p-8 text-center text-red-500">{data?.detail || "Project Not Found"}</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-8">
@@ -78,7 +101,7 @@ export default function ProjectRiskPage({ params }: { params: Promise<{ id: stri
               Why was this flagged?
             </h2>
             <div className="space-y-4">
-              {((data.explanations as Array<{type: string, severity: string, reason: string}>) || []).map((exp, idx: number) => (
+              {(data.explanations || []).map((exp, idx: number) => (
                 <div key={idx} className="p-4 border-l-4 border-red-500 bg-red-50 rounded-r-lg">
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-sm font-bold text-red-800 uppercase">{exp.type.replace('_', ' ')}</span>
@@ -87,7 +110,7 @@ export default function ProjectRiskPage({ params }: { params: Promise<{ id: stri
                   <p className="text-red-900">{exp.reason}</p>
                 </div>
               ))}
-              {data.explanations.length === 0 && (
+              {(!data.explanations || data.explanations.length === 0) && (
                 <p className="text-gray-500 italic p-4 bg-gray-50 rounded-lg border">No critical anomalies detected.</p>
               )}
             </div>

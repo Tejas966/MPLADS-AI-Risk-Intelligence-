@@ -39,6 +39,7 @@ export default function Sidebar() {
         <NavItem href="/" icon="fas fa-chart-pie" label="Dashboard" badge="Live" />
         <NavItem href="/map" icon="fas fa-map-marked-alt" label="Risk Map" />
         <NavItem href="/projects" icon="fas fa-list-check" label="Projects" badge="12k" />
+        <NavItem href="/mp" icon="fas fa-users" label="MP Portfolios" badge="775" />
         <NavItem href="/alerts" icon="fas fa-exclamation-triangle" label="Alerts" badge="12" alert />
 
         <div className="text-[0.55rem] uppercase tracking-[0.8px] text-foreground-secondary font-semibold pt-2.5 pb-1 pl-2 mt-2">Analysis</div>

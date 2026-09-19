@@ -26,13 +26,22 @@ from ai.risk_scoring.real_scorer import MPRiskScore, MPRiskSignal
 
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Ensure tables exist
+# Ensure tables exist with latest schema
+Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 
 
 # ---------------------------------------------------------------------------
 # DATA LOADING
 # ---------------------------------------------------------------------------
+
+def norm_mp(name):
+    """Normalize MP name by removing tenures like (2024-2029) or (2024-30) for unified matching."""
+    if not name:
+        return ""
+    clean = re.sub(r'\s*\(\d{4}[^\)]*\)\s*', ' ', name)
+    return " ".join(clean.split()).strip().upper()
+
 
 def extract_district(ida_str):
     """Extract district name from IDA string like 'GHAZIABAD(DISTRICT MAGISTRAE GHAZIABAD_IDA)'."""
@@ -45,6 +54,24 @@ def extract_district(ida_str):
 
 
 def load_allocated(path):
+    unified_path = os.path.join(BASE, "data", "unified_allocations.csv")
+    if os.path.exists(unified_path):
+        allocated = {}
+        with open(unified_path, encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for r in reader:
+                mp = r["mp_name"].strip()
+                if not mp:
+                    continue
+                allocated[norm_mp(mp)] = {
+                    "state": r["state"].strip(),
+                    "constituency": r["constituency"].strip(),
+                    "allocated_amount": float(r["allocated_amount"] or 0),
+                    "original_name": mp,
+                    "house": r.get("house", "LOK_SABHA"),
+                }
+        return allocated
+
     allocated = {}
     with open(path, encoding="utf-16") as f:
         content = f.read()
@@ -62,14 +89,55 @@ def load_allocated(path):
             amt = float(amt_str)
         except ValueError:
             continue
-        allocated[mp.upper()] = {
+        allocated[norm_mp(mp)] = {
             "state": state, "constituency": const,
             "allocated_amount": amt, "original_name": mp,
+            "house": "LOK_SABHA",
         }
     return allocated
 
 
 def load_transactions(path):
+    unified_path = os.path.join(BASE, "data", "unified_transactions.csv")
+    if os.path.exists(unified_path):
+        txns = []
+        with open(unified_path, encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for r in reader:
+                wid = r["work_id"].strip()
+                mp = r["mp"].strip()
+                if not wid or not mp:
+                    continue
+                exp_date = None
+                exp_date_str = r.get("exp_date_str", "")
+                if exp_date_str:
+                    try:
+                        exp_date = datetime.strptime(exp_date_str, "%d-%b-%Y")
+                    except ValueError:
+                        pass
+                try:
+                    amt = float(r.get("amount", 0) or 0)
+                except ValueError:
+                    amt = 0.0
+
+                txns.append({
+                    "state": r["state"].strip(),
+                    "work_type": r["work_type"].strip(),
+                    "work_id": wid,
+                    "ida": r["ida"].strip(),
+                    "mp": mp,
+                    "mp_upper": mp.upper(),
+                    "constituency": r["constituency"].strip(),
+                    "exp_date": exp_date,
+                    "vendor": r["vendor"].strip(),
+                    "pay_status": r["pay_status"].strip(),
+                    "amount": amt,
+                    "fy": r.get("fy"),
+                    "district": r["district"].strip(),
+                    "house": r.get("house", "LOK_SABHA"),
+                })
+        return txns
+
     txns = []
     with open(path, encoding="utf-16") as f:
         content = f.read()
@@ -109,6 +177,7 @@ def load_transactions(path):
             "vendor": vendor, "pay_status": pay_status,
             "amount": amt, "fy": fy,
             "district": extract_district(ida),
+            "house": "LOK_SABHA",
         })
     return txns
 
@@ -334,8 +403,9 @@ def run():
             work_map[wid] = {
                 "work_type": t["work_type"], "state": t["state"],
                 "district": t["district"], "constituency": t["constituency"],
-                "mp": t["mp"], "mp_upper": t["mp_upper"],
+                "mp": t["mp"], "mp_upper": t["mp_upper"], "mp_norm": norm_mp(t["mp"]),
                 "ida": t["ida"], "fiscal_year": t["fy"],
+                "house": t.get("house", "LOK_SABHA"),
                 "payments": [], "total_expenditure": 0,
                 "payment_count": 0,
             }
@@ -357,7 +427,7 @@ def run():
     # --- Duplicate counts ---
     dup_counts = defaultdict(int)
     for wid, w in work_map.items():
-        key = (w["mp_upper"], w["work_type"], w["district"], w.get("fiscal_year") or "")
+        key = (w["mp_norm"], w["work_type"], w["district"], w.get("fiscal_year") or "")
         dup_counts[key] += 1
 
     # --- Score all works ---
@@ -374,12 +444,12 @@ def run():
     db.commit()
 
     work_scores = {}  # wid -> (overall, level)
-    mp_work_scores = defaultdict(list)  # mp_upper -> [(overall, expenditure)]
+    mp_work_scores = defaultdict(list)  # mp_norm -> [(overall, expenditure)]
 
     for wid, w in work_map.items():
         signals, scores, overall, level = score_work(wid, w, peer_medians, amount_stats, dup_counts)
         work_scores[wid] = (overall, level)
-        mp_work_scores[w["mp_upper"]].append((overall, w["total_expenditure"]))
+        mp_work_scores[w["mp_norm"]].append((overall, w["total_expenditure"]))
 
         # Compute vendor set and date range
         vendors = set(p["vendor"] for p in w["payments"] if p["vendor"])
@@ -396,6 +466,7 @@ def run():
             first_payment_date=min(dates) if dates else None,
             last_payment_date=max(dates) if dates else None,
             latest_payment_status=w["payments"][-1]["pay_status"] if w["payments"] else "Unknown",
+            house=w.get("house", "LOK_SABHA"),
         )
         db.add(db_work)
 
@@ -440,17 +511,18 @@ def run():
     all_mp_keys = set(mp_work_scores.keys()) | set(allocated.keys())
     mp_scored = 0
 
-    for mp_upper in all_mp_keys:
-        mp_info = allocated.get(mp_upper, {})
-        work_scores_list = mp_work_scores.get(mp_upper, [])
+    for mp_key in all_mp_keys:
+        mp_info = allocated.get(mp_key, {})
+        work_scores_list = mp_work_scores.get(mp_key, [])
 
         if not mp_info:
             # Try to find info from transactions
             for wid, w in work_map.items():
-                if w["mp_upper"] == mp_upper:
+                if w["mp_norm"] == mp_key:
                     mp_info = {
                         "state": w["state"], "constituency": w["constituency"],
                         "allocated_amount": 0, "original_name": w["mp"],
+                        "house": w.get("house", "LOK_SABHA"),
                     }
                     break
 
@@ -499,16 +571,17 @@ def run():
         mp_vendors = set()
         mp_txn_count = 0
         for wid, w in work_map.items():
-            if w["mp_upper"] == mp_upper:
+            if w["mp_norm"] == mp_key:
                 mp_txn_count += w["payment_count"]
                 for p in w["payments"]:
                     if p["vendor"]:
                         mp_vendors.add(p["vendor"])
 
         db.add(MPRiskScore(
-            mp_name=mp_info.get("original_name", mp_upper),
+            mp_name=mp_info.get("original_name", mp_key),
             constituency=mp_info.get("constituency", ""),
             state=mp_info.get("state", ""),
+            house=mp_info.get("house", "LOK_SABHA"),
             allocated_amount=alloc_amt,
             total_disbursed=total_disbursed,
             utilization_pct=round(util, 2),
@@ -524,7 +597,7 @@ def run():
         ))
         for sig in mp_signals:
             db.add(MPRiskSignal(
-                mp_name=mp_info.get("original_name", mp_upper),
+                mp_name=mp_info.get("original_name", mp_key),
                 signal_type=sig["signal_type"], severity=sig["severity"],
                 explanation=sig["explanation"], supporting_data=sig["supporting_data"],
             ))

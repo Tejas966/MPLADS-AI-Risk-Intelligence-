@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { API_BASE } from '@/lib/config';
 
 export default function SettingsPage() {
   const [highThreshold, setHighThreshold] = useState(60);
@@ -141,18 +142,18 @@ export default function SettingsPage() {
           <div className="space-y-4 text-xs">
             <div className="flex justify-between items-center py-2 border-b border-stone-100">
               <div>
-                <span className="font-bold text-foreground block">FastAPI Local Ingestion Gateway</span>
-                <span className="text-stone-500">http://127.0.0.1:8000/api/v1</span>
+                <span className="font-bold text-foreground block">FastAPI Ingestion Gateway</span>
+                <span className="text-stone-500 font-mono text-[11px]">{API_BASE}/api/v1</span>
               </div>
               <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px]">
-                Connected (Port 8000)
+                Connected
               </span>
             </div>
 
             <div className="flex justify-between items-center py-2 border-b border-stone-100">
               <div>
                 <span className="font-bold text-foreground block">Database Backend</span>
-                <span className="text-stone-500">SQLite · data/sample/mplads_mock.db (8,868 records)</span>
+                <span className="text-stone-500 font-mono text-[11px]">PostgreSQL (Supabase) · Active Data Store (11,956 records)</span>
               </div>
               <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-[10px]">
                 Active

@@ -1,6 +1,7 @@
 // frontend/src/app/project/[id]/page.tsx
 "use client";
 import { useEffect, useState, use } from 'react';
+import { API_BASE } from '@/lib/config';
 
 interface ExplanationItem {
   type: string;
@@ -10,7 +11,9 @@ interface ExplanationItem {
 
 interface ProjectRiskData {
   project_id?: string;
+  work_id?: string;
   description?: string;
+  work_type?: string;
   district?: string;
   state?: string;
   mp_name?: string;
@@ -21,6 +24,7 @@ interface ProjectRiskData {
   recommendation?: string;
   sanctioned_amount?: number | string;
   expenditure?: number | string;
+  total_expenditure?: number | string;
   physical_progress?: number | string;
   detail?: string;
 }
@@ -32,10 +36,16 @@ export default function ProjectRiskPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     if (!resolvedParams.id) return;
-    fetch(`http://127.0.0.1:8000/api/v1/projects/${resolvedParams.id}/risk`)
+    const cleanId = decodeURIComponent(resolvedParams.id);
+    fetch(`${API_BASE}/api/v1/works/${encodeURIComponent(cleanId)}/risk`)
       .then(res => res.json())
       .then((resData: ProjectRiskData) => {
-        setData(resData);
+        setData({
+          ...resData,
+          project_id: resData.project_id || resData.work_id,
+          description: resData.description || resData.work_type,
+          expenditure: resData.expenditure || resData.total_expenditure,
+        });
         setLoading(false);
       })
       .catch(err => {

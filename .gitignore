@@ -6,6 +6,8 @@ node_modules/
 .env.local
 .env
 backend/.env
+frontend/.env*
+!frontend/.env.example
 allocated.csv
 exp.csv
 scratch/

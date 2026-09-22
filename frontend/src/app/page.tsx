@@ -93,6 +93,7 @@ export default function Dashboard() {
   const [activeWork, setActiveWork] = useState<WorkDetail | null>(null);
   const [loadingWork, setLoadingWork] = useState(false);
   const [loadingWorksList, setLoadingWorksList] = useState(false);
+  const [apiStatus, setApiStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
 
   // Load KPI stats based on selected house
   useEffect(() => {
@@ -101,9 +102,18 @@ export default function Dashboard() {
       : `${API_BASE}/api/v1/stats?house=${selectedHouse}`;
 
     fetch(url)
-      .then((r) => r.json())
-      .then(setStats)
-      .catch((e) => console.error('Stats fetch error:', e));
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        setStats(data);
+        setApiStatus('connected');
+      })
+      .catch((e) => {
+        console.error('Stats fetch error:', e);
+        setApiStatus('error');
+      });
   }, [selectedHouse]);
 
   // Load works (filtered by house, state, and district if selected)
@@ -182,11 +192,23 @@ export default function Dashboard() {
 
         <div className="flex items-center gap-3 text-xs shrink-0 self-end sm:self-center">
           <div className="bg-surface-secondary px-3 py-1.5 rounded-xl border border-border/70 flex items-center gap-2">
-            <span className="text-foreground-secondary">eSAKSHI Sync:</span>
-            <span className="font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Live Connected
-            </span>
+            <span className="text-foreground-secondary">FastAPI Backend:</span>
+            {apiStatus === 'connected' ? (
+              <span className="font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 font-mono">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Live Connected
+              </span>
+            ) : apiStatus === 'connecting' ? (
+              <span className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 font-mono">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                Connecting...
+              </span>
+            ) : (
+              <span className="font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1.5 font-mono">
+                <span className="w-2 h-2 rounded-full bg-rose-500" />
+                Offline
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -447,7 +469,7 @@ export default function Dashboard() {
                     <tr>
                       <td colSpan={5} className="p-8 text-center text-foreground-secondary">
                         <i className="fas fa-spinner fa-spin text-brand mr-2" />
-                        Filtering projects by geographic jurisdiction...
+                        Loading high-priority forensic data... <span className="text-xs opacity-75">(Render free tier may take ~30s on cold start)</span>
                       </td>
                     </tr>
                   ) : works.length > 0 ? (

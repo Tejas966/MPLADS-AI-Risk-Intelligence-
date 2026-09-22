@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { INDIA_STATES, StatePath } from '@/lib/indiaMapData';
+import { API_BASE } from '@/lib/config';
 
 export interface StateRiskData {
   state: string;
@@ -32,7 +33,7 @@ export default function IndiaMap({
   useEffect(() => {
     async function fetchStateData() {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/v1/states');
+        const res = await fetch(`${API_BASE}/api/v1/states`);
         if (res.ok) {
           const data: StateRiskData[] = await res.json();
           const map: Record<string, StateRiskData> = {};

@@ -14,7 +14,11 @@ from ai.risk_scoring.real_scorer import MPRiskScore, MPRiskSignal
 
 app = FastAPI(title="MPLADS AI Risk Intelligence API", version="2.0")
 
-CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000,https://mplads-ai-risk-intelligence.vercel.app").split(",") if o.strip()]
+raw_cors = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:3000,https://mplads-ai-risk-intelligence-123.vercel.app,https://mplads-ai-risk-intelligence.vercel.app"
+)
+CORS_ORIGINS = [o.strip().rstrip("/") for o in raw_cors.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,

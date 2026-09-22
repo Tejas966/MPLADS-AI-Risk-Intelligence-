@@ -23,6 +23,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ---------- Health ----------
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+@app.get("/health/db")
+def health_check_db(db: Session = Depends(get_db)):
+    try:
+        db.query(Work).limit(1).first()
+        return {"status": "ok", "database": "connected"}
+    except Exception:
+        raise HTTPException(status_code=503, detail="Database connection failed")
+
 
 # ---------- Stats ----------
 @app.get("/api/v1/stats")

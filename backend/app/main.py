@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from fastapi import FastAPI, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, contains_eager
 from sqlalchemy import func
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -186,7 +186,13 @@ def list_works(
             | Work.mp_name.ilike(f"%{search}%")
             | Work.district.ilike(f"%{search}%")
         )
-    results = q.order_by(WorkRiskScore.overall_score.desc()).limit(limit).all()
+    # Populate Work.risk_score from the existing join instead of lazy-loading it per row (N+1).
+    results = (
+        q.options(contains_eager(Work.risk_score))
+        .order_by(WorkRiskScore.overall_score.desc())
+        .limit(limit)
+        .all()
+    )
     return {
         "total": q.count(),
         "works": [

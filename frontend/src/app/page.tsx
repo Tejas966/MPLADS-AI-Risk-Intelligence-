@@ -178,7 +178,7 @@ export default function Dashboard() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-base font-bold text-foreground">
-                National MPLADS AI Risk Intelligence Oversight
+                National MPLADS Risk Intelligence Oversight
               </h2>
               <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800 uppercase tracking-wider">
                 Active Audit Cycle · FY 2025-26

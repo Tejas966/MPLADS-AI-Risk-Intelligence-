@@ -10,7 +10,7 @@ export default function ExportPage() {
     setDownloading(type);
     setTimeout(() => {
       // Create a clean mock report or real CSV download
-      const content = `MPLADS AI RISK INTELLIGENCE REPORT
+      const content = `SATARKAI REPORT
 Report Type: ${type.toUpperCase()}
 Generated: ${new Date().toISOString()}
 Scope: All India Parliamentary Constituencies (543 MPs)

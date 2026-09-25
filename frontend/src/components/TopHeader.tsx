@@ -25,8 +25,11 @@ export default function TopHeader() {
         </div>
         <div>
           <h1 className="text-[1.1rem] font-bold text-foreground leading-tight">
-            MPLADS <span className="text-brand">AI</span> Risk Intelligence
+            SATARKAI
           </h1>
+          <div className="text-[0.6rem] text-foreground-secondary leading-tight">
+            Smart AI-based Threat Assessment, Risk Knowledge &amp; Alerting Intelligence
+          </div>
           <div className="flex items-center gap-2">
             <span className="text-[0.65rem] font-bold text-brand tracking-wider uppercase bg-brand/10 px-1.5 py-0.2 rounded">Team Vanguard</span>
             <span className="text-[0.6rem] text-foreground-secondary">· SIH 2026</span>

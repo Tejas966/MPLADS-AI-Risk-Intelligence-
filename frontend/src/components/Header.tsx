@@ -14,9 +14,12 @@ export default function Header() {
           <div>
             <Link href="/" className="inline-block focus:outline-none focus:ring-2 focus:ring-brand rounded">
               <h1 className="text-xl font-bold tracking-tight text-foreground">
-                <span className="text-brand">MPLADS</span> AI Risk Intelligence
+                SATARKAI
               </h1>
             </Link>
+            <p className="text-foreground-secondary text-xs mt-0.5">
+              Smart AI-based Threat Assessment, Risk Knowledge &amp; Alerting Intelligence
+            </p>
             <p className="text-foreground-secondary text-xs mt-0.5">
               Assisting human review. Priority scores do not establish wrongdoing.
             </p>

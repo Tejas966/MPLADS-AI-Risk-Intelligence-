@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MPLADS AI Risk Intelligence · Team Vanguard",
-  description: "AI-powered risk intelligence platform for MPLADS monitoring by Team Vanguard.",
+  title: "SATARKAI · Smart AI-based Threat Assessment, Risk Knowledge & Alerting Intelligence",
+  description: "SATARKAI (Smart AI-based Threat Assessment, Risk Knowledge & Alerting Intelligence) for MPLADS monitoring by Team Vanguard.",
 };
 
 export default function RootLayout({
